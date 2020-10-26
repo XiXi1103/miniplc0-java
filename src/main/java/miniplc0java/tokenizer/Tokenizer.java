@@ -48,7 +48,7 @@ public class Tokenizer {
         // 解析成功则返回无符号整数类型的token，否则返回编译错误
         //
         // Token 的 Value 应填写数字的值
-        try{
+
             Pos start = new Pos(it.currentPos().row,it.currentPos().col);
             String s = "";
             char c;
@@ -58,9 +58,7 @@ public class Tokenizer {
             }while (Character.isDigit(c));
             int number = Integer.parseInt(s);
             return new Token(TokenType.Uint,number,start,it.currentPos());
-        }catch (Exception e){
-            throw new Error("Not implemented");
-        }
+
     }
 
     private Token lexIdentOrKeyword() throws TokenizeError {
@@ -73,7 +71,7 @@ public class Tokenizer {
         // -- 否则，返回标识符
         //
         // Token 的 Value 应填写标识符或关键字的字符串
-        
+
             Pos start = new Pos(it.currentPos().row,it.currentPos().col);
             String s = "";
             char c;

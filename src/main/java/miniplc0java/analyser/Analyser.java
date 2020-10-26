@@ -205,7 +205,7 @@ public final class Analyser {
         analyseConstantDeclaration();
         analyseVariableDeclaration();
         analyseStatementSequence();
-        throw new Error("Not implemented");
+
     }
 
     private void analyseConstantDeclaration() throws CompileError {
