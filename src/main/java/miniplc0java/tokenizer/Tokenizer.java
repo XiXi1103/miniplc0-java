@@ -73,7 +73,7 @@ public class Tokenizer {
         // -- 否则，返回标识符
         //
         // Token 的 Value 应填写标识符或关键字的字符串
-        try{
+        
             Pos start = new Pos(it.currentPos().row,it.currentPos().col);
             String s = "";
             char c;
@@ -82,15 +82,12 @@ public class Tokenizer {
                 c = it.peekChar();
             }while (Character.isLetterOrDigit(c));
             if (s.equals("begin")) return new Token(TokenType.Begin,s,start,it.currentPos());
-            if (s.equals("End")) return new Token(TokenType.End,s,start,it.currentPos());
-            if (s.equals("Const")) return new Token(TokenType.Const,s,start,it.currentPos());
-            if (s.equals("Print")) return new Token(TokenType.Print,s,start,it.currentPos());
-            if (s.equals("Var")) return new Token(TokenType.Var,s,start,it.currentPos());
+            if (s.equals("end")) return new Token(TokenType.End,s,start,it.currentPos());
+            if (s.equals("const")) return new Token(TokenType.Const,s,start,it.currentPos());
+            if (s.equals("print")) return new Token(TokenType.Print,s,start,it.currentPos());
+            if (s.equals("var")) return new Token(TokenType.Var,s,start,it.currentPos());
             return new Token(TokenType.Ident,s,start, it.currentPos());
 
-        }catch (Exception e){
-            throw new Error("Not implemented");
-        }
     }
 
     private Token lexOperatorOrUnknown() throws TokenizeError {
