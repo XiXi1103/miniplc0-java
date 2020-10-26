@@ -81,7 +81,7 @@ public class Tokenizer {
                 s += it.nextChar();
                 c = it.peekChar();
             }while (Character.isLetterOrDigit(c));
-            if (s.equals("Begin")) return new Token(TokenType.Begin,s,start,it.currentPos());
+            if (s.equals("begin")) return new Token(TokenType.Begin,s,start,it.currentPos());
             if (s.equals("End")) return new Token(TokenType.End,s,start,it.currentPos());
             if (s.equals("Const")) return new Token(TokenType.Const,s,start,it.currentPos());
             if (s.equals("Print")) return new Token(TokenType.Print,s,start,it.currentPos());
