@@ -53,10 +53,9 @@ public class Tokenizer {
             String s = "";
             char c;
             do {
-                c = it.peekChar();
                 char k= it.nextChar();
                 s += k;
-
+                c = it.peekChar();
             }while (Character.isDigit(c));
             int number = Integer.parseInt(s);
             return new Token(TokenType.Uint,number,start,it.currentPos());
