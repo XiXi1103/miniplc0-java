@@ -51,11 +51,15 @@ public class Tokenizer {
 
             Pos start = new Pos(it.currentPos().row,it.currentPos().col);
             String s = "";
-            char c;
-            do {
+            char c= it.peekChar();
+//            do {
+//                s += it.nextChar();
+//                c = it.peekChar();
+//            }while (Character.isDigit(c));
+            while (Character.isDigit(c)){
                 s += it.nextChar();
                 c = it.peekChar();
-            }while (Character.isDigit(c));
+            };
             int number = Integer.parseInt(s);
             return new Token(TokenType.Uint,number,start,it.currentPos());
 
