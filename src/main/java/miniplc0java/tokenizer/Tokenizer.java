@@ -57,8 +57,8 @@ public class Tokenizer {
 //                c = it.peekChar();
 //            }while (Character.isDigit(c));
             while (Character.isDigit(c)){
-                s += it.nextChar();
-                c = it.peekChar();
+                s += c;
+                c = it.nextChar();
             };
             int number = Integer.parseInt(s);
             return new Token(TokenType.Uint,number,start,it.currentPos());
