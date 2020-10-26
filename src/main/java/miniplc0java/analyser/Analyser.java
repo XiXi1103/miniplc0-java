@@ -284,16 +284,10 @@ public final class Analyser {
             if (peeked.getTokenType() == TokenType.Ident) {
                 // 调用相应的分析函数
                 // 如果遇到其他非终结符的 FIRST 集呢？
-                next();
-                expect(TokenType.Equal);
-                analyseExpression();
+                analyseAssignmentStatement();
             }
             else if (peeked.getTokenType()== TokenType.Print){
-                next();
-                expect(TokenType.LParen);
-                analyseExpression();
-                expect(TokenType.RParen);
-                expect(TokenType.Semicolon);
+                analyseOutputStatement();
             }
             else if (peeked.getTokenType() == TokenType.Semicolon){
                 next();
@@ -359,6 +353,7 @@ public final class Analyser {
         Token nameToken = expect(TokenType.Ident);
         expect(TokenType.Equal);
         analyseExpression();
+        expect(TokenType.Semicolon);
         // 标识符是什么？
         String name = (String) nameToken.getValue();
         var symbol = symbolTable.get(name);
@@ -399,11 +394,12 @@ public final class Analyser {
         while (true) {
             // 预读可能是运算符的 token
             Token op = peek();
-            if (op.getTokenType()==TokenType.Mult||op.getTokenType()==TokenType.Div){
-                next();
+            if (op.getTokenType() != TokenType.Mult && op.getTokenType() != TokenType.Div) {
+                break;
             }
-            else break;
+
             // 运算符
+            next();
 
             // 因子
             analyseFactor();
