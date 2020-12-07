@@ -7,19 +7,18 @@ public class Instruction {
     Integer x;
 
     public Instruction(Operation opt) {
+        System.out.println(opt);
         this.opt = opt;
         this.x = 0;
     }
 
     public Instruction(Operation opt, Integer x) {
+        System.out.println(opt+"   "+x);
         this.opt = opt;
         this.x = x;
     }
 
-    public Instruction() {
-        this.opt = Operation.LIT;
-        this.x = 0;
-    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -55,16 +54,37 @@ public class Instruction {
     @Override
     public String toString() {
         switch (this.opt) {
-            case ADD:
-            case DIV:
-            case ILL:
-            case MUL:
-            case SUB:
-            case WRT:
+            case add_i:
+            case sub_i:
+            case mul_i:
+            case div_i:
+            case add_f:
+            case sub_f:
+            case mul_f:
+            case div_f:
+            case xor:
+            case not:
+            case cmp_i:
+            case cmp_u:
+            case cmp_f:
+            case neg_i:
+            case neg_f:
+            case set_lt:
+            case set_gt:
+            case ret:
+            case store_64:
+            case load_64:
                 return String.format("%s", this.opt);
-            case LIT:
-            case LOD:
-            case STO:
+            case push:
+            case loca:
+            case arga:
+            case globa:
+
+            case stackalloc:
+            case br:
+            case br_false:
+            case br_true:
+            case call:
                 return String.format("%s %s", this.opt, this.x);
             default:
                 return "ILL";
