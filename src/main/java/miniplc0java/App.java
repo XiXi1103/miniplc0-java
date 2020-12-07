@@ -104,6 +104,12 @@ public class App {
                 System.exit(0);
                 return;
             }
+            output.println("72 30 3b 3e");
+            output.println("00 00 00 01");
+            output.printf("%08x%n", Analyser.globalSymbol.getSize());
+//            output.println(Integer.toHexString(1));
+            Analyser.globalSymbol.output(output);
+
             for (Instruction instruction : instructions) {
                 output.println(instruction.toString());
             }

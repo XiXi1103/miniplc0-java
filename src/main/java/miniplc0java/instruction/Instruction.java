@@ -5,15 +5,14 @@ import java.util.Objects;
 public class Instruction {
     private Operation opt;
     Integer x;
+    String opt_code;
 
     public Instruction(Operation opt) {
-        System.out.println(opt);
         this.opt = opt;
         this.x = 0;
     }
 
     public Instruction(Operation opt, Integer x) {
-        System.out.println(opt+"   "+x);
         this.opt = opt;
         this.x = x;
     }
@@ -53,6 +52,7 @@ public class Instruction {
 
     @Override
     public String toString() {
+
         switch (this.opt) {
             case add_i:
             case sub_i:
@@ -85,7 +85,7 @@ public class Instruction {
             case br_false:
             case br_true:
             case call:
-                return String.format("%s %s", this.opt, this.x);
+                return String.format("%s %016x", this.opt, x);
             default:
                 return "ILL";
         }

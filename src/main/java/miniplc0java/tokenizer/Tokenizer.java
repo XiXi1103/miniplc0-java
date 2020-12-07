@@ -143,6 +143,7 @@ public class Tokenizer {
             case ':':
                 return new Token(TokenType.COLON,':', it.previousPos(), it.currentPos());
             case '"'://TODO:STRING
+
                 return new Token(TokenType.STRING_LITERAL,"", it.previousPos(), it.currentPos());
             default:
                 // 不认识这个输入，摸了

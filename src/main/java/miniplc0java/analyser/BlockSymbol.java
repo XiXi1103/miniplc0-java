@@ -4,12 +4,14 @@ import miniplc0java.error.AnalyzeError;
 import miniplc0java.error.ErrorCode;
 import miniplc0java.util.Pos;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 
 public class BlockSymbol {
     public static int nextOffset = 0;
-    private HashMap<String, SymbolEntry> blockSymbolTable = new HashMap<>();
-
+    final private HashMap<String, SymbolEntry> blockSymbolTable = new HashMap<>();
+    
+    public int getSize(){ return blockSymbolTable.size();}
     public int getNextVariableOffset() {
         return nextOffset++;
     }
@@ -64,6 +66,33 @@ public class BlockSymbol {
         var entry = this.blockSymbolTable.get(name);
         entry.type = type;
     }
+
+    public int getLength(String name){
+        var entry = this.blockSymbolTable.get(name);
+        return entry.len;
+    }
+    public void setLength(String name,int len){
+        var entry = this.blockSymbolTable.get(name);
+        entry.len = len;
+    }
+    public void output(PrintStream output){
+        try{
+            for (String key:blockSymbolTable.keySet()) {
+                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?1:0);
+                output.printf("%08x%n", getLength(key));
+                for (int j=0;j<getLength(key);j++){
+                    output.print("00");
+                }
+                output.print("\n");
+            }
+        }catch (Exception e){
+
+        }
+
+    }
+    
+    
+    
 
 //    /**
 //     * 获取下一个变量的栈偏移

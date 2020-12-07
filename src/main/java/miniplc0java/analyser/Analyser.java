@@ -6,6 +6,7 @@ import miniplc0java.instruction.Operation;
 import miniplc0java.tokenizer.Token;
 import miniplc0java.tokenizer.TokenType;
 import miniplc0java.tokenizer.Tokenizer;
+import miniplc0java.util.Pos;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public final class Analyser {
     static HashMap<String, FuncInfo> funList = new HashMap<>();                 //name -> id,para_cnt
     int funID = 0;
     int localParaCnt;
-    static BlockSymbol globalSymbol = new BlockSymbol();
+    public static BlockSymbol globalSymbol = new BlockSymbol();
     String curFunc;//当前运行的函数名
 
 
@@ -148,6 +149,19 @@ public final class Analyser {
         throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
     }
 
+    private boolean isConstant(Token token)throws CompileError{
+        String name = token.getValueString();
+        if (globalSymbol.getIdent(name)!=-1){
+            return globalSymbol.isConstant(name,token.getStartPos());
+        }
+        for(int i=0;i<symbolTable.size();i++) {
+            if (symbolTable.get(i).getIdent(name) != -1) {
+                return symbolTable.get(i).isConstant(name,token.getStartPos());
+            }
+        }
+        throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
+    }
+
 
 
     private Type analyseTy() throws CompileError{
@@ -217,24 +231,29 @@ public final class Analyser {
         Type type = analyseTy();
 
         if (check(TokenType.ASSIGN)){
-
-            BlockSymbol blockSymbol = symbolTable.get(top);
-            blockSymbol.addSymbol(name,true,false,type,token.getStartPos());
-
-            if (isLocal)
+            expect(TokenType.ASSIGN);
+            if (isLocal){
+                BlockSymbol blockSymbol = symbolTable.get(top);
+                blockSymbol.addSymbol(name,true,false,type,token.getStartPos());
                 instructions.add(new Instruction(Operation.loca, blockSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
-            else
+            }
+            else{
+                globalSymbol.addSymbol(name,true,false,type,token.getStartPos());
                 instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));
-
+            }
             analyseExpr();
             instructions.add(new Instruction(Operation.store_64));
         }
         else {
-            symbolTable.get(top).addSymbol((String) token.getValue(),false,false,type,token.getStartPos());
-            expect(TokenType.SEMICOLON);
+            if (isLocal){
+                symbolTable.get(top).addSymbol(name,false,false,type,token.getStartPos());
+            }
+            else
+                globalSymbol.addSymbol(name,false,false,type,token.getStartPos());
+
+
         }
-
-
+        expect(TokenType.SEMICOLON);
     }
 
     private void analyseConst_decl_stmt(boolean isLocal) throws CompileError{  //初步完成
@@ -246,14 +265,17 @@ public final class Analyser {
         Type type = analyseTy();
         expect(TokenType.ASSIGN);
 
-        BlockSymbol blockSymbol = this.symbolTable.get(top);
-        blockSymbol.addSymbol(name,true,true,type,token.getStartPos());
 
-        if (isLocal)
+
+        if (isLocal){
+            BlockSymbol blockSymbol = symbolTable.get(top);
+            blockSymbol.addSymbol(name,true,true,type, token.getStartPos());
             instructions.add(new Instruction(Operation.loca, blockSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
-        else
+        }
+        else{
+            globalSymbol.addSymbol(name,true,true,type, token.getStartPos());
             instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));
-
+        }
         analyseExpr();
         expect(TokenType.SEMICOLON);
 
@@ -287,19 +309,19 @@ public final class Analyser {
 
         analyseBlock_stmt();
 
-        instructions.add(new Instruction(Operation.br, pointer1-instructions.size()));//跳回while
+        instructions.add(new Instruction(Operation.br, pointer1-instructions.size()-1));//跳回while
         instructions.add(pointer2, new Instruction(Operation.br_false, instructions.size()-pointer2+1));//在while后加跳转，若expr为假，则跳转
 
     }
 
     private void analyseReturn_stmt() throws CompileError{
         //return_stmt -> 'return' expr? ';'
-        expect(TokenType.RETURN_KW);
+        Token token = expect(TokenType.RETURN_KW);
         if (funList.get(curFunc).returnType!=Type.VOID)
             instructions.add(new Instruction(Operation.arga,0));
         Type type = analyseExpr();
         if (type!=funList.get(curFunc).returnType)
-            throw new Error("函数返回类型不对");
+            throw new AnalyzeError(ErrorCode.InvalidReturn,token.getStartPos());
 
         if (funList.get(curFunc).returnType!=Type.VOID)
             instructions.add(new Instruction(Operation.store_64));
@@ -396,7 +418,7 @@ public final class Analyser {
             analyseFunc();
         }
         if (funList.get("main")==null)
-            throw new Error("expect a main function");
+            throw new AnalyzeError(ErrorCode.NoMainFunction,new Pos(0,0));
 
     }
     public boolean isb_op() throws CompileError{
@@ -411,17 +433,17 @@ public final class Analyser {
 
     static HashMap<TokenType,Integer> priorityMap = new HashMap<>();//TODO
     static {
-        priorityMap.put(TokenType.ASSIGN,1);
-        priorityMap.put(TokenType.LE,2);
-        priorityMap.put(TokenType.LT,2);
-        priorityMap.put(TokenType.GE,2);
-        priorityMap.put(TokenType.GT,2);
-        priorityMap.put(TokenType.EQ,2);
-        priorityMap.put(TokenType.NEQ,2);
-        priorityMap.put(TokenType.PLUS,3);
-        priorityMap.put(TokenType.MINUS,3);
-        priorityMap.put(TokenType.MUL,4);
-        priorityMap.put(TokenType.DIV,4);
+        priorityMap.put(TokenType.ASSIGN,2);
+        priorityMap.put(TokenType.LE,3);
+        priorityMap.put(TokenType.LT,3);
+        priorityMap.put(TokenType.GE,3);
+        priorityMap.put(TokenType.GT,3);
+        priorityMap.put(TokenType.EQ,3);
+        priorityMap.put(TokenType.NEQ,3);
+        priorityMap.put(TokenType.PLUS,4);
+        priorityMap.put(TokenType.MINUS,4);
+        priorityMap.put(TokenType.MUL,5);
+        priorityMap.put(TokenType.DIV,5);
     }
 
     /**
@@ -432,7 +454,8 @@ public final class Analyser {
      * 上一个b_op的优先级
      */
     int lastPriority = 0;
-    private Type analyseExpr() throws CompileError{//需要保证调用完成时栈顶就是表达式值
+    private Type analyseExpr() throws CompileError{
+        //需要保证调用完成时栈顶就是表达式值
 //        expr ->
 //                operator_expr
 //                        | negate_expr
@@ -451,6 +474,9 @@ public final class Analyser {
                 returnType = analyseCall_expr(token);
             }
             else if (check(TokenType.ASSIGN)){
+                if (isConstant(token)){
+                    throw new AnalyzeError(ErrorCode.InvalidAssignment,token.getStartPos());
+                }
                 analyseAssign_expr(token);
                 returnType = Type.VOID;
             }
@@ -474,9 +500,12 @@ public final class Analyser {
                 throw new AnalyzeError(ErrorCode.InvalidAssignment,token.getStartPos());
         }
         else if (check(TokenType.L_PAREN)){
+            int tmp = lastPriority;
+            lastPriority = 0;
             expect(TokenType.L_PAREN);
             returnType = analyseExpr();
             expect(TokenType.R_PAREN);
+            lastPriority =tmp;
         }
         else if (check(TokenType.UINT_LITERAL)){
             Token token = expect(TokenType.UINT_LITERAL);
@@ -520,6 +549,7 @@ public final class Analyser {
                             instructions.add(new Instruction(Operation.add_f));
                             returnType=Type.DOUBLE;
                         }
+                        break;
                     }
                     case MINUS : {
                         if (returnType ==Type.INT&&newType ==Type.INT) {
@@ -530,6 +560,7 @@ public final class Analyser {
                             instructions.add(new Instruction(Operation.sub_f));
                             returnType=Type.DOUBLE;
                         }
+                        break;
                     }
                     case MUL : {
                         if (returnType ==Type.INT&&newType ==Type.INT) {
@@ -540,6 +571,7 @@ public final class Analyser {
                             instructions.add(new Instruction(Operation.mul_f));
                             returnType=Type.DOUBLE;
                         }
+                        break;
                     }
                     case DIV : {//TODO: what's div_u??
                         if (returnType ==Type.INT&&newType ==Type.INT) {
@@ -550,15 +582,18 @@ public final class Analyser {
                             instructions.add(new Instruction(Operation.div_f));
                             returnType=Type.DOUBLE;
                         }
+                        break;
                     }
                     case EQ : {
                         instructions.add(new Instruction(Operation.xor));
                         instructions.add(new Instruction(Operation.not));
                         returnType=Type.INT;
+                        break;
                     }
                     case NEQ : {
                         instructions.add(new Instruction(Operation.xor));
                         returnType=Type.INT;
+                        break;
                     }
                     case LT :{
                         if (newType==Type.INT&&returnType==Type.INT){
@@ -570,6 +605,7 @@ public final class Analyser {
                             instructions.add(new Instruction(Operation.set_lt));
                         }
                         returnType=Type.INT;
+                        break;
                     }
                     case GT :{
                         if (newType==Type.INT&&returnType==Type.INT){
@@ -581,40 +617,35 @@ public final class Analyser {
                             instructions.add(new Instruction(Operation.set_gt));
                         }
                         returnType=Type.INT;
+                        break;
                     }
                     case GE : {
                         if (newType==Type.INT&&returnType==Type.INT){
                             instructions.add(new Instruction(Operation.cmp_i));//是0则跳出，不是0用set_gt
-                            instructions.add(new Instruction(Operation.br_true,4));
-                            instructions.add(new Instruction(Operation.not));
-                            instructions.add(new Instruction(Operation.br,2));
-                            instructions.add(new Instruction(Operation.set_gt));
+                            instructions.add(new Instruction(Operation.set_lt));
+                            instructions.add(new Instruction(Operation.br_false));
                         }
                         else if (newType==Type.DOUBLE&&returnType==Type.DOUBLE){
                             instructions.add(new Instruction(Operation.cmp_f));
-                            instructions.add(new Instruction(Operation.br_true,4));
-                            instructions.add(new Instruction(Operation.not));
-                            instructions.add(new Instruction(Operation.br,2));
-                            instructions.add(new Instruction(Operation.set_gt));
+                            instructions.add(new Instruction(Operation.set_lt));
+                            instructions.add(new Instruction(Operation.br_false));
                         }
                         returnType=Type.INT;
+                        break;
                     }
                     case LE : {
                         if (newType==Type.INT&&returnType==Type.INT){
-                            instructions.add(new Instruction(Operation.cmp_i));//是0则跳出，不是0用set_lt
-                            instructions.add(new Instruction(Operation.br_true,4));
-                            instructions.add(new Instruction(Operation.not));
-                            instructions.add(new Instruction(Operation.br,2));
-                            instructions.add(new Instruction(Operation.set_lt));
+                            instructions.add(new Instruction(Operation.cmp_i));//是0则跳出，不是0用set_gt
+                            instructions.add(new Instruction(Operation.set_gt));
+                            instructions.add(new Instruction(Operation.br_false));
                         }
                         else if (newType==Type.DOUBLE&&returnType==Type.DOUBLE){
                             instructions.add(new Instruction(Operation.cmp_f));
-                            instructions.add(new Instruction(Operation.br_true,4));
-                            instructions.add(new Instruction(Operation.not));
-                            instructions.add(new Instruction(Operation.br,2));
-                            instructions.add(new Instruction(Operation.set_lt));
+                            instructions.add(new Instruction(Operation.set_gt));
+                            instructions.add(new Instruction(Operation.br_false));
                         }
                         returnType=Type.INT;
+                        break;
                     }
 
                 }
