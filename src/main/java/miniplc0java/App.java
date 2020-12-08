@@ -110,7 +110,6 @@ public class App {
 //            output.println(Integer.toHexString(1));
             Analyser.globalSymbol.output(output);
             output.println();
-            System.out.println("1111111111111111111111111111111");
             Analyser.printFuncOutputs(output);
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");
