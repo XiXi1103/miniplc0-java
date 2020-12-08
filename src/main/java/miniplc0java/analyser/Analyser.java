@@ -313,6 +313,7 @@ public final class Analyser {
         instructions.add(pointer, new Instruction(Operation.br_false, instructions.size()-pointer+1));
 
         if (check(TokenType.ELSE_KW)){
+            expect(TokenType.ELSE_KW);
             if (check(TokenType.IF_KW)){
                 analyseIf_stmt();
             }
@@ -562,7 +563,7 @@ public final class Analyser {
 
             returnType = Type.VOID;
         }
-        else throw new AnalyzeError(ErrorCode.InvalidInput,peek().getStartPos());
+        else throw new AnalyzeError(ErrorCode.Pos1,peek().getStartPos());
         while (!isNEG){
             if (check(TokenType.AS_KW)){
                 Token token = expect(TokenType.AS_KW);

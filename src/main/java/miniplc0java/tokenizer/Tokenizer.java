@@ -121,12 +121,16 @@ public class Tokenizer {
                     throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
                 return new Token(TokenType.NEQ,"!=", it.previousPos(), it.currentPos());
             case '<':
-                if (it.peekChar()=='=')
+                if (it.peekChar()=='='){
+                    it.nextChar();
                     return new Token(TokenType.LE,"<=", it.previousPos(), it.currentPos());
+                }
                 return new Token(TokenType.LT,'<', it.previousPos(), it.currentPos());
             case '>':
-                if (it.peekChar()=='=')
+                if (it.peekChar()=='='){
+                    it.nextChar();
                     return new Token(TokenType.GE,">=", it.previousPos(), it.currentPos());
+                }
                 return new Token(TokenType.GT,'>', it.previousPos(), it.currentPos());
             case '(':
                 return new Token(TokenType.L_PAREN,'(', it.previousPos(), it.currentPos());
