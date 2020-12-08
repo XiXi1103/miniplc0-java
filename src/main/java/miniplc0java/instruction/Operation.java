@@ -56,7 +56,7 @@ public enum Operation {
     ,print_i
     ,print_c
     ,print_f
-    ,prints
-    ,println
+    ,print_s
+    ,print_ln
     ,panic
 }

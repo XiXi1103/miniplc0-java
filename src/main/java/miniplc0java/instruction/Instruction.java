@@ -74,6 +74,14 @@ public class Instruction {
             case ret:
             case store_64:
             case load_64:
+            case print_c:
+            case print_f:
+            case print_i:
+            case print_ln:
+            case print_s:
+            case scan_c:
+            case scan_i:
+            case scan_f:
                 return String.format("%s", this.opt);
             case push:
             case loca:
@@ -85,7 +93,8 @@ public class Instruction {
             case br_false:
             case br_true:
             case call:
-                return String.format("%s %016x", this.opt, x);
+
+                return String.format("%s %016x", this.opt, (long)x);
             default:
                 return "ILL";
         }

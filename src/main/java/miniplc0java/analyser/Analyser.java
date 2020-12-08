@@ -9,6 +9,7 @@ import miniplc0java.tokenizer.Tokenizer;
 import miniplc0java.util.Pos;
 import org.checkerframework.checker.units.qual.A;
 
+import javax.lang.model.type.ErrorType;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -195,7 +196,7 @@ public final class Analyser {
         else if (token.getValue().equals("double")){
             return Type.DOUBLE;
         }
-        else throw new Error("expect int, void or double");
+        else throw new AnalyzeError(ErrorCode.InvalidType,peek().getStartPos());
     }
 
     private void analyseStmt() throws CompileError{
@@ -502,10 +503,14 @@ public final class Analyser {
 //消除左递归后:
 //( IDENT(null|(call)|=expr) |-expr | (expr) |UINT |DOUBLE |STRING ) {b_op expr| as 'ty'}
         Type returnType;
+
         if (check(TokenType.IDENT)){
             Token token = expect(TokenType.IDENT);
             if (check(TokenType.L_PAREN)){
+                int tmp1 = lastPriority;
+                lastPriority = 0;
                 returnType = analyseCall_expr(token);
+                tmp1 = lastPriority;
             }
             else if (check(TokenType.ASSIGN)){
                 if (isConstant(token)){
@@ -521,11 +526,14 @@ public final class Analyser {
             }
         }
         else if (check(TokenType.MINUS)){
+            int tmp1 = lastPriority;
+            lastPriority = 0;
             Token token = expect(TokenType.MINUS);
             boolean tmp = isNEG;//模拟os保存寄存器
             isNEG = true;
             returnType = analyseExpr();
             isNEG = tmp;
+            tmp1 = lastPriority;
             if (returnType == Type.DOUBLE)
                 instructions.add(new Instruction(Operation.neg_f));
             else if (returnType == Type.INT)
@@ -534,12 +542,11 @@ public final class Analyser {
                 throw new AnalyzeError(ErrorCode.InvalidAssignment,token.getStartPos());
         }
         else if (check(TokenType.L_PAREN)){
-            int tmp = lastPriority;
-            lastPriority = 0;
+
             expect(TokenType.L_PAREN);
             returnType = analyseExpr();
             expect(TokenType.R_PAREN);
-            lastPriority =tmp;
+
         }
         else if (check(TokenType.UINT_LITERAL)){
             Token token = expect(TokenType.UINT_LITERAL);
@@ -554,15 +561,15 @@ public final class Analyser {
 
             returnType = Type.VOID;
         }
-        else throw new Error("illegal expr!");
+        else throw new AnalyzeError(ErrorCode.InvalidInput,peek().getStartPos());
         while (!isNEG){
             if (check(TokenType.AS_KW)){
-                expect(TokenType.AS_KW);
+                Token token = expect(TokenType.AS_KW);
                 Type type = analyseTy();
                 if (returnType!=Type.VOID){
                     returnType = type;
                 }
-                else throw new Error("非法的类型转换(将void类型转换为其他类型)");
+                else throw new AnalyzeError(ErrorCode.InvalidAsStmt,token.getStartPos());
             }
             else if (isb_op()){
                 Token token = peek();
@@ -688,7 +695,6 @@ public final class Analyser {
             else break;
         }
 
-
         return returnType;
     }
     private Type analyseCall_expr(Token token) throws CompileError{
@@ -696,28 +702,81 @@ public final class Analyser {
         expect(TokenType.L_PAREN);
 
         FuncInfo funcInfo = funList.get(token.getValueString());
-        if (funcInfo==null) throw new NotDeclaredError(ErrorCode.NotDeclared,token.getStartPos());
-
-        instructions.add(new Instruction(Operation.stackalloc,funcInfo.returnType==Type.VOID?0:1));
-        instructions.add(new Instruction(Operation.stackalloc,funcInfo.paraCnt));
-        //TODO:若为赋值语句，没处理报错
-        while (!check(TokenType.R_PAREN)){
-            analyseExpr();
-            if (!check(TokenType.R_PAREN)){
-                expect(TokenType.COMMA);
-                analyseExpr();
+        if (funcInfo==null) {
+            //!!!!下面这几个函数高度耦合，改一个记得都改
+            if (token.getValueString().equals("getint")){
+                expect(TokenType.R_PAREN);
+                instructions.add(new Instruction(Operation.scan_i));
+                return Type.INT;
             }
+            else if (token.getValueString().equals("getdouble")){
+                expect(TokenType.R_PAREN);
+                instructions.add(new Instruction(Operation.scan_f));
+                return Type.DOUBLE;
+            }
+            else if (token.getValueString().equals("getchar")){
+                expect(TokenType.R_PAREN);
+                instructions.add(new Instruction(Operation.scan_c));
+                return Type.INT;
+            }
+
+            else if (token.getValueString().equals("putint")) {
+                Type type = analyseExpr();
+                if (type!=Type.INT) throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
+                instructions.add(new Instruction(Operation.print_i));
+                expect(TokenType.R_PAREN);
+            }
+            else if (token.getValueString().equals("putdouble")) {
+                Type type = analyseExpr();
+                if (type!=Type.DOUBLE) throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
+                instructions.add(new Instruction(Operation.print_f));
+                expect(TokenType.R_PAREN);
+            }
+            else if (token.getValueString().equals("putstr")) {
+                Type type = analyseExpr();
+                if (type!=Type.INT) throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
+                instructions.add(new Instruction(Operation.print_s));
+                expect(TokenType.R_PAREN);
+            }
+            else if (token.getValueString().equals("putchar")) {
+                Type type = analyseExpr();
+                if (type!=Type.INT) throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
+                instructions.add(new Instruction(Operation.print_c));
+                expect(TokenType.R_PAREN);
+            }
+            else if (token.getValueString().equals("putln")) {
+                instructions.add(new Instruction(Operation.print_ln));
+                expect(TokenType.R_PAREN);
+            }
+            else
+                throw new NotDeclaredError(ErrorCode.NotDeclared,token.getStartPos());
+            return Type.VOID;
+        }
+        else{
+            instructions.add(new Instruction(Operation.stackalloc,funcInfo.returnType==Type.VOID?0:1));
+            instructions.add(new Instruction(Operation.stackalloc,funcInfo.paraCnt));
+            //TODO:若为赋值语句，没处理报错，函数参数不对也没处理报错
+            while (!check(TokenType.R_PAREN)){
+                analyseExpr();
+                if (!check(TokenType.R_PAREN)){
+                    expect(TokenType.COMMA);
+                    analyseExpr();
+                }
+            }
+
+            instructions.add(new Instruction(Operation.call,funcInfo.funID));
+            expect(TokenType.R_PAREN);
+            return funcInfo.returnType;
         }
 
-        instructions.add(new Instruction(Operation.call,funcInfo.funID));
-
-        expect(TokenType.R_PAREN);
-        return funcInfo.returnType;
     }
     private void analyseAssign_expr(Token token) throws CompileError{
         expect(TokenType.ASSIGN);
-        findIdent(token);
-        analyseExpr();
+        Type type1 = findIdent(token);
+        Type type2 = analyseExpr();
+        if (type1!=type2){
+            throw new AnalyzeError(ErrorCode.InvalidAssignment,token.getStartPos());
+        }
         instructions.add(new Instruction(Operation.store_64));
     }
 
