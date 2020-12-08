@@ -109,10 +109,8 @@ public class App {
             output.printf("%08x%n", Analyser.globalSymbol.getSize());
 //            output.println(Integer.toHexString(1));
             Analyser.globalSymbol.output(output);
-
-            for (Instruction instruction : instructions) {
-                output.println(instruction.toString());
-            }
+            output.println();
+            Analyser.printFuncOutputs(output);
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");
             System.exit(3);

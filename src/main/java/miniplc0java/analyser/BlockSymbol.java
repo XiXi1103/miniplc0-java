@@ -78,7 +78,7 @@ public class BlockSymbol {
     public void output(PrintStream output){
         try{
             for (String key:blockSymbolTable.keySet()) {
-                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?1:0);
+                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?0:1);
                 output.printf("%08x%n", getLength(key));
                 for (int j=0;j<getLength(key);j++){
                     output.print("00");

@@ -7,7 +7,9 @@ import miniplc0java.tokenizer.Token;
 import miniplc0java.tokenizer.TokenType;
 import miniplc0java.tokenizer.Tokenizer;
 import miniplc0java.util.Pos;
+import org.checkerframework.checker.units.qual.A;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +24,26 @@ public final class Analyser {
     int funID = 0;
     int localParaCnt;
     public static BlockSymbol globalSymbol = new BlockSymbol();
+    public static HashMap<Integer,Object> globalValue= new HashMap<>();
+    public static ArrayList<Instruction> startFuncInstructions = new ArrayList<>();
     String curFunc;//当前运行的函数名
 
+    public static ArrayList<FuncOutput> funcOutputs = new ArrayList<>();//存所有函数的信息及指令
+    public static void printFuncOutputs (PrintStream output){
+        output.printf("%08x%n", funcOutputs.size());
+        for (FuncOutput funcOutput:funcOutputs) {
+            output.printf("%08x%n", funcOutput.funcInfo.funID);
+            output.printf("%08x%n", funcOutput.funcInfo.returnType==Type.VOID?0:1);
+            output.printf("%08x%n", funcOutput.funcInfo.paraCnt);
+            output.printf("%08x%n", funcOutput.funcInfo.localParaCnt);
+            output.printf("%08x%n", funcOutput.funcInfo.bodyCnt);
+            for (Instruction i:funcOutput.list) {
+                output.println(i.toString());
+            }
+            output.println();
+            
+        }
+    }
 
     /** 当前偷看的 token */
     Token peekedToken = null;
@@ -215,7 +235,7 @@ public final class Analyser {
         }
     }
 
-
+    //!!!!!!!!此部分和analyseGloDecl_stmt高度重合，有bug记得两个都改
     private void analyseDecl_stmt(boolean isLocal) throws CompileError{//是否为局部变量
         //decl_stmt -> let_decl_stmt | const_decl_stmt
 
@@ -381,6 +401,10 @@ public final class Analyser {
         analyseBlock_stmt();
 
         funList.get(token.getValueString()).localParaCnt=localParaCnt;//函数表中设置函数局部变量个数
+        funList.get(token.getValueString()).bodyCnt=instructions.size();
+
+        FuncOutput funcOutput = new FuncOutput(funList.get(token.getValueString()),instructions);
+        funcOutputs.add(funcOutput);
 
         //TODO:打印函数信息
 
@@ -411,14 +435,24 @@ public final class Analyser {
 
     private void analyseProgram() throws CompileError {
         //program -> decl_stmt* function*
+        FuncInfo funcInfo = new FuncInfo(funID,0,Type.VOID);
+        funList.put("_start",funcInfo);
+        funID++;
         while (check(TokenType.LET_KW) || check(TokenType.CONST_KW)) {
-            analyseDecl_stmt(false);
+            analyseGloDecl_stmt();
         }
+        startFuncInstructions = instructions;
+
         while (check(TokenType.FN_KW)){
             analyseFunc();
         }
         if (funList.get("main")==null)
             throw new AnalyzeError(ErrorCode.NoMainFunction,new Pos(0,0));
+        instructions = startFuncInstructions;
+        instructions.add(new Instruction(Operation.call,funList.get("main").funID));
+        funcInfo.bodyCnt = instructions.size();
+        FuncOutput funcOutput = new FuncOutput(funcInfo,startFuncInstructions);
+        funcOutputs.add(0,funcOutput);
 
     }
     public boolean isb_op() throws CompileError{
@@ -692,7 +726,49 @@ public final class Analyser {
 
 
 
+    private void analyseGloDecl_stmt() throws CompileError{//是否为局部变量
+        //decl_stmt -> let_decl_stmt | const_decl_stmt
 
+        if (check(TokenType.LET_KW)) analyseGloLet_decl_stmt();
+        else analyseGloConst_decl_stmt();
+    }
+    private void analyseGloLet_decl_stmt() throws CompileError{    //初步完成
+        //let_decl_stmt -> 'let' IDENT ':' ty ('=' expr)? ';'
+        expect(TokenType.LET_KW);
+        Token token = expect(TokenType.IDENT);
+        String name = (String)token.getValue();
+        expect(TokenType.COLON);
+        Type type = analyseTy();
+
+        if (check(TokenType.ASSIGN)){
+            expect(TokenType.ASSIGN);
+
+            globalSymbol.addSymbol(name,true,false,type,token.getStartPos());
+            instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
+
+            analyseExpr();
+            instructions.add(new Instruction(Operation.store_64));
+        }
+        expect(TokenType.SEMICOLON);
+    }
+
+    private void analyseGloConst_decl_stmt() throws CompileError{  //初步完成
+        //const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
+        expect(TokenType.CONST_KW);
+        Token token = expect(TokenType.IDENT);
+        String name = (String)token.getValue();
+        expect(TokenType.COLON);
+        Type type = analyseTy();
+        expect(TokenType.ASSIGN);
+
+        globalSymbol.addSymbol(name,true,true,type,token.getStartPos());
+        instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
+
+        analyseExpr();
+        instructions.add(new Instruction(Operation.store_64));
+
+        expect(TokenType.SEMICOLON);
+    }
 
 
 
