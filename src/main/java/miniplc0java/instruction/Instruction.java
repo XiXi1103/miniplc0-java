@@ -93,7 +93,6 @@ public class Instruction {
             case br_false:
             case br_true:
             case call:
-
                 return String.format("%s %016x", this.opt, (long)x);
             default:
                 return "ILL";

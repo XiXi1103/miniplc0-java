@@ -774,7 +774,7 @@ public final class Analyser {
         expect(TokenType.ASSIGN);
         Type type1 = findIdent(token);
         Type type2 = analyseExpr();
-        if (type1!=type2){
+        if (type1==Type.VOID||type1!=type2){
             throw new AnalyzeError(ErrorCode.InvalidAssignment,token.getStartPos());
         }
         instructions.add(new Instruction(Operation.store_64));
