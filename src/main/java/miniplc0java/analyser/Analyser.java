@@ -381,7 +381,8 @@ public final class Analyser {
         Token token = expect(TokenType.IDENT);
         expect(TokenType.L_PAREN);
 
-
+        if (funList.get(token.getValueString())!=null)
+            throw new AnalyzeError(ErrorCode.DuplicateDeclaration, token.getStartPos());
 
         symbolTable = new ArrayList<>();//新建符号表
         symbolTable.add(new BlockSymbol());//symbolTable[0]为参数列表，应用arga命令处理！
