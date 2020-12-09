@@ -576,7 +576,10 @@ public final class Analyser {
             returnType = Type.INT;
             strID++;
         }
-        else expect(TokenType.nop);
+        else {
+            expect(TokenType.nop);
+            return Type.VOID;
+        }
         while (!isNEG){
             if (check(TokenType.AS_KW)){
                 Token token = expect(TokenType.AS_KW);
