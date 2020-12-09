@@ -75,14 +75,33 @@ public class BlockSymbol {
         var entry = this.blockSymbolTable.get(name);
         entry.len = len;
     }
+    public boolean isStr(String name){
+        var entry = this.blockSymbolTable.get(name);
+        return entry.isStr;
+    }
+    public String getStr(String name){
+        var entry = this.blockSymbolTable.get(name);
+        return entry.string;
+    }
+    public void setStr(String name,String str){
+        var entry = this.blockSymbolTable.get(name);
+        entry.isStr = true;
+        entry.string = str;
+    }
     public void output(PrintStream output){
         try{
             for (String key:blockSymbolTable.keySet()) {
                 output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?0:1);
                 output.printf("%08x%n", getLength(key));
-                for (int j=0;j<getLength(key);j++){
-                    output.print("00");
+                if(isStr(key)){
+                    String str = getStr(key);
+                    for (int i=0;i<str.length();i++)
+                    output.printf("%02x%n",(int)str.charAt(i));
                 }
+                else
+                    for (int j=0;j<getLength(key);j++){
+                        output.print("00");
+                    }
                 output.print("\n");
             }
         }catch (Exception e){

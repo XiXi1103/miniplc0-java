@@ -6,6 +6,8 @@ public class SymbolEntry {
     boolean isInitialized;
     int stackOffset;
     Type type;
+    boolean isStr=false;//表示是否为字符串
+    String string;//上个变量为true时存字符串内容
 
     /**
      * @param isConstant

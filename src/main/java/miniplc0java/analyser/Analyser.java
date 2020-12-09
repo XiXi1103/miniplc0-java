@@ -28,6 +28,7 @@ public final class Analyser {
     public static HashMap<Integer,Object> globalValue= new HashMap<>();
     public static ArrayList<Instruction> startFuncInstructions = new ArrayList<>();
     String curFunc;//当前运行的函数名
+    int strID;//只有string会使用，每次加一，直接存字符串内容可能会与ident重名
 
     public static ArrayList<FuncOutput> funcOutputs = new ArrayList<>();//存所有函数的信息及指令
     public static void printFuncOutputs (PrintStream output){
@@ -512,7 +513,7 @@ public final class Analyser {
                 int tmp1 = lastPriority;
                 lastPriority = 0;
                 returnType = analyseCall_expr(token);
-                tmp1 = lastPriority;
+                lastPriority=tmp1;
             }
             else if (check(TokenType.ASSIGN)){
                 if (isConstant(token)){
@@ -535,7 +536,7 @@ public final class Analyser {
             isNEG = true;
             returnType = analyseExpr();
             isNEG = tmp;
-            tmp1 = lastPriority;
+            lastPriority=tmp1;
             if (returnType == Type.DOUBLE)
                 instructions.add(new Instruction(Operation.neg_f));
             else if (returnType == Type.INT)
@@ -556,12 +557,17 @@ public final class Analyser {
             returnType = Type.INT;
         }
         else if (check(TokenType.DOUBLE_LITERAL)){
-
             returnType = Type.DOUBLE;
         }
-        else if (check(TokenType.STRING_LITERAL)){
-
-            returnType = Type.VOID;
+        else if (check(TokenType.STRING_LITERAL)){//!!所有字符串都是以strID为键存储的，独立于其他部分
+            Token token = next();
+            String str = token.getValueString();
+            globalSymbol.addSymbol(Integer.toString(strID),true,true,Type.VOID,token.getStartPos());
+            globalSymbol.setLength(Integer.toString(strID),str.length());
+            globalSymbol.setStr(Integer.toString(strID),str);
+            strID++;
+            startFuncInstructions.add(new Instruction(Operation.push,globalSymbol.getOffset(Integer.toString(strID),token.getStartPos())));
+            returnType = Type.INT;
         }
         else throw new AnalyzeError(ErrorCode.Pos1,peek().getStartPos());
         while (!isNEG){
