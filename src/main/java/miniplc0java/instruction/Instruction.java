@@ -52,8 +52,9 @@ public class Instruction {
 
     @Override
     public String toString() {
-
-        switch (this.opt) {
+        boolean debug=true;
+        if (!debug)
+            switch (this.opt) {
             case add_i: return "20";
             case sub_i:return "21";
             case mul_i:return "22";
@@ -96,49 +97,50 @@ public class Instruction {
             default:
                 return "ILL";
         }
-//        switch (this.opt) {
-//            case add_i:
-//            case sub_i:
-//            case mul_i:
-//            case div_i:
-//            case add_f:
-//            case sub_f:
-//            case mul_f:
-//            case div_f:
-//            case xor:
-//            case not:
-//            case cmp_i:
-//            case cmp_u:
-//            case cmp_f:
-//            case neg_i:
-//            case neg_f:
-//            case set_lt:
-//            case set_gt:
-//            case ret:
-//            case store_64:
-//            case load_64:
-//            case print_c:
-//            case print_f:
-//            case print_i:
-//            case print_ln:
-//            case print_s:
-//            case scan_c:
-//            case scan_i:
-//            case scan_f:
-//                return String.format("%s", this.opt);
-//            case push:
-//            case loca:
-//            case arga:
-//            case globa:
-//
-//            case stackalloc:
-//            case br:
-//            case br_false:
-//            case br_true:
-//            case call:
-//                return String.format("%s %016x", this.opt, (long)x);
-//            default:
-//                return "ILL";
-//        }
+        else
+            switch (this.opt) {
+            case add_i:
+            case sub_i:
+            case mul_i:
+            case div_i:
+            case add_f:
+            case sub_f:
+            case mul_f:
+            case div_f:
+            case xor:
+            case not:
+            case cmp_i:
+            case cmp_u:
+            case cmp_f:
+            case neg_i:
+            case neg_f:
+            case set_lt:
+            case set_gt:
+            case ret:
+            case store_64:
+            case load_64:
+            case print_c:
+            case print_f:
+            case print_i:
+            case print_ln:
+            case print_s:
+            case scan_c:
+            case scan_i:
+            case scan_f:
+                return String.format("%s", this.opt);
+            case push:
+            case loca:
+            case arga:
+            case globa:
+
+            case stackalloc:
+            case br:
+            case br_false:
+            case br_true:
+            case call:
+                return String.format("%s %016x", this.opt, (long)x);
+            default:
+                return "ILL";
+        }
     }
 }

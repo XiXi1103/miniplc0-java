@@ -10,7 +10,13 @@ import java.util.HashMap;
 public class BlockSymbol {
     public static int nextOffset = 0;
     final private HashMap<String, SymbolEntry> blockSymbolTable = new HashMap<>();
-    
+
+    public void addAllOffset(){//当函数返回值不为void时，对所有偏移加一
+        for (String key:blockSymbolTable.keySet()){
+            blockSymbolTable.get(key).stackOffset++;
+        }
+    }
+
     public int getSize(){ return blockSymbolTable.size();}
     public int getNextVariableOffset() {
         return nextOffset++;

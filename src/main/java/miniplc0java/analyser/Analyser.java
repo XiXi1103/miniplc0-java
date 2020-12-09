@@ -304,7 +304,7 @@ public final class Analyser {
         instructions.add(new Instruction(Operation.store_64));
     }
 
-    private void analyseIf_stmt() throws CompileError{
+    private void analyseIf_stmt() throws CompileError{//TODO:所有跳转都有问题，数不对
         //if_stmt -> 'if' expr block_stmt ('else' (block_stmt | if_stmt))?
         expect(TokenType.IF_KW);
         analyseExpr();
@@ -340,8 +340,11 @@ public final class Analyser {
     private void analyseReturn_stmt() throws CompileError{
         //return_stmt -> 'return' expr? ';'
         Token token = expect(TokenType.RETURN_KW);
-        if (funList.get(curFunc).returnType!=Type.VOID)
-            instructions.add(new Instruction(Operation.arga,0));
+        if (funList.get(curFunc).returnType==Type.VOID){
+            expect(TokenType.SEMICOLON);
+            return;
+        }
+        instructions.add(new Instruction(Operation.arga,0));
         Type type = analyseExpr();
         if (type!=funList.get(curFunc).returnType)
             throw new AnalyzeError(ErrorCode.InvalidReturn,token.getStartPos());
@@ -398,6 +401,9 @@ public final class Analyser {
         expect(TokenType.R_PAREN);
         expect(TokenType.ARROW);
         Type type = analyseTy();
+        if (type!=Type.VOID){
+            symbolTable.get(0).addAllOffset();
+        }
 
         funList.put(token.getValueString(),new FuncInfo(funID,paraCnt,type));//添加函数到函数表
         funID++;
@@ -408,16 +414,14 @@ public final class Analyser {
         funList.get(token.getValueString()).bodyCnt=instructions.size();
 
         FuncOutput funcOutput = new FuncOutput(funList.get(token.getValueString()),instructions);
-        funcOutputs.add(funcOutput);
-
-        //TODO:打印函数信息
-
+        funcOutputs.add(funcOutput);//总输出中加上本函数的输出
 
     }
 
-    private int analyseFuncParaList() throws CompileError{
+    private int analyseFuncParaList() throws CompileError{//TODO:返回值类型为void时参数从0开始
         int cnt=1;
-        BlockSymbol.nextOffset=1;//因为0处是返回值
+
+        BlockSymbol.nextOffset=0;//因为0处是返回值
 
         analyseFuncPara();
         while (nextIf(TokenType.COMMA)!=null){
@@ -762,16 +766,12 @@ public final class Analyser {
         }
         else{
             instructions.add(new Instruction(Operation.stackalloc,funcInfo.returnType==Type.VOID?0:1));
-            instructions.add(new Instruction(Operation.stackalloc,funcInfo.paraCnt));
-            //TODO:若为赋值语句，没处理报错，函数参数不对也没处理报错
-            while (!check(TokenType.R_PAREN)){
-                analyseExpr();
-                if (!check(TokenType.R_PAREN)){
+            //TODO:参数类型不对没处理报错
+            for (int i=0;i<funcInfo.paraCnt;i++){
+                if (i!=0)
                     expect(TokenType.COMMA);
-                    analyseExpr();
-                }
+                analyseExpr();
             }
-
             instructions.add(new Instruction(Operation.call,funcInfo.funID));
             expect(TokenType.R_PAREN);
             return funcInfo.returnType;

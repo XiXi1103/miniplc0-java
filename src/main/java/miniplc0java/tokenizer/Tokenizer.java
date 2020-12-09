@@ -107,8 +107,11 @@ public class Tokenizer {
             case '*':
                 return new Token(TokenType.MUL,'*', it.previousPos(), it.currentPos());
             case '/':
-                if (it.peekChar()=='/')
+                if (it.peekChar()=='/'){
+                    it.nextChar();
                     return new Token(TokenType.COMMENT,"//", it.previousPos(), it.currentPos());//TODO:注释处理
+                }
+
                 return new Token(TokenType.DIV,'/', it.previousPos(), it.currentPos());
             case '=':
                 if (it.peekChar()=='='){
