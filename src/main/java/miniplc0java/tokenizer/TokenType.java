@@ -1,7 +1,7 @@
 package miniplc0java.tokenizer;
 
 public enum TokenType {
-
+    nop,
     FN_KW,
     LET_KW,
     CONST_KW,

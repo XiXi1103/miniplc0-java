@@ -576,7 +576,7 @@ public final class Analyser {
             returnType = Type.INT;
             strID++;
         }
-        else throw new AnalyzeError(ErrorCode.Pos1,peek().getStartPos());
+        else expect(TokenType.nop);
         while (!isNEG){
             if (check(TokenType.AS_KW)){
                 Token token = expect(TokenType.AS_KW);
