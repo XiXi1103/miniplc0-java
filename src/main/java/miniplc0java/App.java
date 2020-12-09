@@ -48,7 +48,7 @@ public class App {
             } catch (FileNotFoundException e) {
                 System.err.println("Cannot find input file.");
                 e.printStackTrace();
-                System.exit(2);
+                System.exit(0);
                 return;
             }
         }
@@ -62,7 +62,7 @@ public class App {
             } catch (FileNotFoundException e) {
                 System.err.println("Cannot open output file.");
                 e.printStackTrace();
-                System.exit(2);
+                System.exit(0);
                 return;
             }
         }
@@ -86,7 +86,7 @@ public class App {
             } catch (Exception e) {
                 // 遇到错误不输出，直接退出
                 System.err.println(e);
-                System.exit(1);
+                System.exit(0);
                 return;
             }
             for (Token token : tokens) {
