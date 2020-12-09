@@ -32,13 +32,13 @@ public class Tokenizer {
         if (Character.isDigit(peek)) {
             return lexUInt();
         }
+        else if(peek=='\"'){
+            return lexStringLiteral();
+        }
         else if (Character.isLetter(peek)||peek=='_') {
             return lexIdentOrKeyword();
         }
-        else if(peek=='\"'){
-            return lexStringLiteral();
 
-        }
         else {
             return lexOperatorOrUnknown();
         }
@@ -203,9 +203,6 @@ public class Tokenizer {
                 return new Token(TokenType.SEMICOLON,';', it.previousPos(), it.currentPos());
             case ':':
                 return new Token(TokenType.COLON,':', it.previousPos(), it.currentPos());
-            case '"'://TODO:STRING
-
-                return new Token(TokenType.STRING_LITERAL,"", it.previousPos(), it.currentPos());
             default:
                 // 不认识这个输入，摸了
                 throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
