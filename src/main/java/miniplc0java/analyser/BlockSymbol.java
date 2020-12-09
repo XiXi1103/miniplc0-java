@@ -102,7 +102,7 @@ public class BlockSymbol {
                 if(isStr(key)){
                     String str = getStr(key);
                     for (int i=0;i<str.length();i++)
-                    output.printf("%02x%n",(int)str.charAt(i));
+                    output.printf("%02x",(int)str.charAt(i));
                 }
                 else
                     for (int j=0;j<getLength(key);j++){

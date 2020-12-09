@@ -311,8 +311,8 @@ public final class Analyser {
         int pointer = instructions.size();
         analyseBlock_stmt();
 
-        instructions.add(pointer, new Instruction(Operation.br_false, instructions.size()-pointer+1));
-
+        instructions.add(pointer, new Instruction(Operation.br, instructions.size()-pointer+1));
+        int pointer2 = instructions.size();
         if (check(TokenType.ELSE_KW)){
             expect(TokenType.ELSE_KW);
             if (check(TokenType.IF_KW)){
@@ -321,6 +321,8 @@ public final class Analyser {
             else analyseBlock_stmt();
         }
 
+        instructions.add(pointer, new Instruction(Operation.br_true, 1));
+        instructions.add(pointer2+1, new Instruction(Operation.br, instructions.size()-pointer2));
     }
 
     private void analyseWhile_stmt() throws CompileError{
@@ -332,9 +334,9 @@ public final class Analyser {
 
         analyseBlock_stmt();
 
-        instructions.add(new Instruction(Operation.br, pointer1-instructions.size()-1));//跳回while
-        instructions.add(pointer2, new Instruction(Operation.br_false, instructions.size()-pointer2+1));//在while后加跳转，若expr为假，则跳转
-
+        instructions.add(new Instruction(Operation.br, pointer1-instructions.size()-3));//跳回while
+        instructions.add(pointer2, new Instruction(Operation.br, instructions.size()-pointer2));//在while后加跳转，若expr为假，则跳转
+        instructions.add(pointer2, new Instruction(Operation.br_true, 1));
     }
 
     private void analyseReturn_stmt() throws CompileError{
@@ -569,9 +571,10 @@ public final class Analyser {
             globalSymbol.addSymbol(Integer.toString(strID),true,true,Type.VOID,token.getStartPos());
             globalSymbol.setLength(Integer.toString(strID),str.length());
             globalSymbol.setStr(Integer.toString(strID),str);
-            strID++;
+
             startFuncInstructions.add(new Instruction(Operation.push,globalSymbol.getOffset(Integer.toString(strID),token.getStartPos())));
             returnType = Type.INT;
+            strID++;
         }
         else throw new AnalyzeError(ErrorCode.Pos1,peek().getStartPos());
         while (!isNEG){
@@ -676,12 +679,12 @@ public final class Analyser {
                         if (newType==Type.INT&&returnType==Type.INT){
                             instructions.add(new Instruction(Operation.cmp_i));//是0则跳出，不是0用set_gt
                             instructions.add(new Instruction(Operation.set_lt));
-                            instructions.add(new Instruction(Operation.br_false));
+                            instructions.add(new Instruction(Operation.not));
                         }
                         else if (newType==Type.DOUBLE&&returnType==Type.DOUBLE){
                             instructions.add(new Instruction(Operation.cmp_f));
                             instructions.add(new Instruction(Operation.set_lt));
-                            instructions.add(new Instruction(Operation.br_false));
+                            instructions.add(new Instruction(Operation.not));
                         }
                         returnType=Type.INT;
                         break;
@@ -690,12 +693,12 @@ public final class Analyser {
                         if (newType==Type.INT&&returnType==Type.INT){
                             instructions.add(new Instruction(Operation.cmp_i));//是0则跳出，不是0用set_gt
                             instructions.add(new Instruction(Operation.set_gt));
-                            instructions.add(new Instruction(Operation.br_false));
+                            instructions.add(new Instruction(Operation.not));
                         }
                         else if (newType==Type.DOUBLE&&returnType==Type.DOUBLE){
                             instructions.add(new Instruction(Operation.cmp_f));
                             instructions.add(new Instruction(Operation.set_gt));
-                            instructions.add(new Instruction(Operation.br_false));
+                            instructions.add(new Instruction(Operation.not));
                         }
                         returnType=Type.INT;
                         break;

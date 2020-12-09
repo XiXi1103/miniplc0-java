@@ -31,9 +31,15 @@ public class Tokenizer {
         char peek = it.peekChar();
         if (Character.isDigit(peek)) {
             return lexUInt();
-        } else if (Character.isLetter(peek)||peek=='_') {
+        }
+        else if (Character.isLetter(peek)||peek=='_') {
             return lexIdentOrKeyword();
-        } else {
+        }
+        else if(peek=='\"'){
+            return lexStringLiteral();
+
+        }
+        else {
             return lexOperatorOrUnknown();
         }
     }
@@ -93,6 +99,54 @@ public class Tokenizer {
 
     }
 
+    private Token lexStringLiteral() throws TokenizeError {
+        StringBuilder stringBuilder = new StringBuilder();
+        Pos start = it.currentPos();
+        it.nextChar();
+        while(!it.isEOF()) {
+            char peek = it.peekChar();
+            if (peek == '\\') {
+//                stringBuilder.append(it.nextChar());
+                peek = it.peekChar();
+                switch (peek) {
+                    case '\'':
+                        stringBuilder.append('\'');
+                        break;
+                    case '\"':
+                        stringBuilder.append('\"');
+                        break;
+                    case '\\':
+                        stringBuilder.append('\\');
+                        break;
+                    case 'n':
+                        stringBuilder.append('\n');
+                        break;
+                    case 't':
+                        stringBuilder.append('\t');
+                        break;
+                    case 'r':
+                        stringBuilder.append('\r');
+                        break;
+                    default:
+                        throw new TokenizeError(ErrorCode.InvalidStringLiteral ,it.currentPos());
+                }
+                it.nextChar();
+//                if (peek == '\'' || peek == '\"' || peek == '\\' || peek == 'n' || peek == 't' || peek == 'r') {
+//                    stringBuilder.append(it.nextChar());
+//                } else {
+//                    throw new TokenizeError(ErrorCode.InvalidStringLiteral ,it.currentPos());
+//                }
+            } else if (peek == '\"') {
+                it.nextChar();
+                break;
+            } else {
+                stringBuilder.append(it.nextChar());
+            }
+        }
+        String result = stringBuilder.toString();
+        Pos end = it.currentPos();
+        return new Token(TokenType.STRING_LITERAL, result, start, end);
+    }
     private Token lexOperatorOrUnknown() throws TokenizeError {
         switch (it.nextChar()) {
             case '+':
