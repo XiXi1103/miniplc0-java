@@ -171,11 +171,8 @@ public final class Analyser {
     private Type findIdent(Token token) throws CompileError{
         String name = token.getValueString();
 //        if (funList)
-        if(globalSymbol.getIdent(name)!=-1){
-            instructions.add(new Instruction(Operation.globa,globalSymbol.getIdent(name)));
-            return globalSymbol.getType(name);
-        }
-        for(int i=0;i<symbolTable.size();i++){
+
+        for(int i=symbolTable.size()-1;i>=0;i--){
             if (symbolTable.get(i).getIdent(name)!=-1){
                 if (i==0)
                     instructions.add(new Instruction(Operation.arga,symbolTable.get(i).getIdent(name)));
@@ -183,6 +180,10 @@ public final class Analyser {
                     instructions.add(new Instruction(Operation.loca,symbolTable.get(i).getIdent(name)));
                 return symbolTable.get(i).getType(name);
             }
+        }
+        if(globalSymbol.getIdent(name)!=-1){
+            instructions.add(new Instruction(Operation.globa,globalSymbol.getIdent(name)));
+            return globalSymbol.getType(name);
         }
         throw new AnalyzeError(ErrorCode.NotDeclared,token.getStartPos());
     }

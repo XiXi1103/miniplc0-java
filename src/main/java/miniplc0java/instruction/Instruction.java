@@ -128,7 +128,7 @@ public class Instruction {
             case scan_c:
             case scan_i:
             case scan_f:
-                return String.format("%n%s%n", this.opt);
+                return String.format("%s%n", this.opt);
             case push:
             case loca:
             case arga:
