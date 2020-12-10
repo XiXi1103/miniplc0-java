@@ -267,7 +267,8 @@ public final class Analyser {
         String name = (String)token.getValue();
         expect(TokenType.COLON);
         Type type = analyseTy();
-
+        if (type==Type.VOID)
+            throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-1));
         if (check(TokenType.ASSIGN)){
             expect(TokenType.ASSIGN);
             if (isLocal){
@@ -302,7 +303,8 @@ public final class Analyser {
         expect(TokenType.COLON);
         Type type = analyseTy();
         expect(TokenType.ASSIGN);
-
+        if (type==Type.VOID)
+            throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-1));
 
 
         if (isLocal){
@@ -839,7 +841,8 @@ public final class Analyser {
         String name = (String)token.getValue();
         expect(TokenType.COLON);
         Type type = analyseTy();
-
+        if (type==Type.VOID)
+            throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-1));
         if (check(TokenType.ASSIGN)){
             expect(TokenType.ASSIGN);
 
@@ -863,7 +866,8 @@ public final class Analyser {
         expect(TokenType.COLON);
         Type type = analyseTy();
         expect(TokenType.ASSIGN);
-
+        if (type==Type.VOID)
+            throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-1));
         globalSymbol.addSymbol(name,true,true,type,token.getStartPos());
         instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
 
