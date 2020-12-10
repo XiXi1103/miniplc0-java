@@ -572,10 +572,12 @@ public final class Analyser {
                 throw new AnalyzeError(ErrorCode.InvalidAssignment,token.getStartPos());
         }
         else if (check(TokenType.L_PAREN)){
-
+            int tmp1 = lastPriority;
+            lastPriority = 0;
             expect(TokenType.L_PAREN);
             returnType = analyseExpr();
             expect(TokenType.R_PAREN);
+            lastPriority = tmp1;
 
         }
         else if (check(TokenType.UINT_LITERAL)){
@@ -844,6 +846,9 @@ public final class Analyser {
 
             analyseExpr();
             instructions.add(new Instruction(Operation.store_64));
+        }
+        else {
+            globalSymbol.addSymbol(name,false,false,type,token.getStartPos());
         }
         expect(TokenType.SEMICOLON);
     }
