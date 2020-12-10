@@ -19,9 +19,7 @@ public class Tokenizer {
      * @throws TokenizeError 如果解析有异常则抛出
      */
     public Token nextToken() throws TokenizeError {
-            it.readAll();
-
-        // 跳过之前的所有空白字符
+        it.readAll();
         skipSpaceCharacters();
 
         if (it.isEOF()) {
@@ -35,6 +33,9 @@ public class Tokenizer {
         else if(peek=='\"'){
             return lexStringLiteral();
         }
+        else if (peek=='\''){
+            return lexCharLiteral();
+        }
         else if (Character.isLetter(peek)||peek=='_') {
             return lexIdentOrKeyword();
         }
@@ -43,15 +44,46 @@ public class Tokenizer {
             return lexOperatorOrUnknown();
         }
     }
+    private Token lexCharLiteral() throws TokenizeError{
+        Pos st = it.currentPos();
+        Token token;
+        it.nextChar();
+        if (it.peekChar()=='\\'){
+            it.nextChar();
+            switch (it.nextChar()){
+                case 'n':
+                    token = new Token(TokenType.UINT_LITERAL,(int)'\n',st, it.currentPos());
+                    break;
+                case 't':
+                    token = new Token(TokenType.UINT_LITERAL,(int)'\t',st, it.currentPos());
+                    break;
+                case 'r':
+                    token =  new Token(TokenType.UINT_LITERAL,(int)'\r',st, it.currentPos());
+                    break;
+                case '\'':
+                    token =  new Token(TokenType.UINT_LITERAL,(int)'\'',st, it.currentPos());
+                    break;
+                case '\\':
+                    token =  new Token(TokenType.UINT_LITERAL,(int)'\\',st, it.currentPos());
+                    break;
+                case '\"':
+                    token =  new Token(TokenType.UINT_LITERAL,(int)'\"',st, it.currentPos());
+                    break;
+                default:
+                    throw new TokenizeError(ErrorCode.InvalidChar, it.currentPos());
+            }
+        }
+        else {
+            token =  new Token(TokenType.UINT_LITERAL,(int)it.nextChar(),st, it.currentPos());
+        }
+        if (it.nextChar()!='\''){
+            throw new TokenizeError(ErrorCode.InvalidChar, it.currentPos());
+        }
+        return token;
+    }
+
+
     private Token lexUInt() throws TokenizeError {
-        // 请填空：
-        // 直到查看下一个字符不是数字为止:
-        // -- 前进一个字符，并存储这个字符
-        //
-        // 解析存储的字符串为无符号整数
-        // 解析成功则返回无符号整数类型的token，否则返回编译错误
-        //
-        // Token 的 Value 应填写数字的值
         boolean isDouble = false;
         StringBuilder stringBuilder = new StringBuilder();
         Pos start = it.currentPos();
@@ -97,40 +129,7 @@ public class Tokenizer {
             }
 
         }}
-//    }
-//    private Token lexUInt() throws TokenizeError {
-//        // 请填空：
-//        // 直到查看下一个字符不是数字为止:
-//        // -- 前进一个字符，并存储这个字符
-//        //
-//        // 解析存储的字符串为无符号整数
-//        // 解析成功则返回无符号整数类型的token，否则返回编译错误
-//        //
-//        // Token 的 Value 应填写数字的值
-//
-//            Pos start = new Pos(it.currentPos().row,it.currentPos().col);
-//            String s = "";
-//            char c;
-//            do {
-//                char k= it.nextChar();
-//                s += k;
-//                c = it.peekChar();
-//            }while (Character.isDigit(c));
-//            int number = Integer.parseInt(s);
-//            return new Token(TokenType.UINT_LITERAL,number,start,it.currentPos());
-//
-//    }
-
     private Token lexIdentOrKeyword() throws TokenizeError {
-        // 请填空：
-        // 直到查看下一个字符不是数字或字母为止:
-        // -- 前进一个字符，并存储这个字符
-        //
-        // 尝试将存储的字符串解释为关键字
-        // -- 如果是关键字，则返回关键字类型的 token
-        // -- 否则，返回标识符
-        //
-        // Token 的 Value 应填写标识符或关键字的字符串
 
             Pos start = new Pos(it.currentPos().row,it.currentPos().col);
             String s = "";
@@ -185,11 +184,6 @@ public class Tokenizer {
                         throw new TokenizeError(ErrorCode.InvalidStringLiteral ,it.currentPos());
                 }
                 it.nextChar();
-//                if (peek == '\'' || peek == '\"' || peek == '\\' || peek == 'n' || peek == 't' || peek == 'r') {
-//                    stringBuilder.append(it.nextChar());
-//                } else {
-//                    throw new TokenizeError(ErrorCode.InvalidStringLiteral ,it.currentPos());
-//                }
             } else if (peek == '\"') {
                 it.nextChar();
                 break;
@@ -216,10 +210,10 @@ public class Tokenizer {
                 return new Token(TokenType.MUL,'*', it.previousPos(), it.currentPos());
             case '/':
                 if (it.peekChar()=='/'){
-                    it.nextChar();
-                    return new Token(TokenType.COMMENT,"//", it.previousPos(), it.currentPos());//TODO:注释处理
+                    while (it.nextChar()!='\n'){
+                    }
+                    return nextToken();
                 }
-
                 return new Token(TokenType.DIV,'/', it.previousPos(), it.currentPos());
             case '=':
                 if (it.peekChar()=='='){
