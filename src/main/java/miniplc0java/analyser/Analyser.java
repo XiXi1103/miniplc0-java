@@ -429,11 +429,13 @@ public final class Analyser {
 
         analyseBlock_stmt();
 
-        if (token.getValueString().equals("main")){
+        if (funList.get(token.getValueString()).returnType==Type.VOID){
             instructions.add(new Instruction(Operation.ret));
         }
         funList.get(token.getValueString()).localParaCnt=localParaCnt;//函数表中设置函数局部变量个数
         funList.get(token.getValueString()).bodyCnt=instructions.size();
+
+
 
         FuncOutput funcOutput = new FuncOutput(funList.get(token.getValueString()),instructions);
         funcOutputs.add(funcOutput);//总输出中加上本函数的输出

@@ -84,7 +84,7 @@ public class Tokenizer {
             do {
                 s += it.nextChar();
                 c = it.peekChar();
-            }while (Character.isLetterOrDigit(c));
+            }while (Character.isLetterOrDigit(c)||c=='_');
             if (s.equals("fn")) return new Token(TokenType.FN_KW,s,start,it.currentPos());
             if (s.equals("let")) return new Token(TokenType.LET_KW,s,start,it.currentPos());
             if (s.equals("const")) return new Token(TokenType.CONST_KW,s,start,it.currentPos());
