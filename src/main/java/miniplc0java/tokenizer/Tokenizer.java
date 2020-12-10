@@ -43,7 +43,6 @@ public class Tokenizer {
             return lexOperatorOrUnknown();
         }
     }
-
     private Token lexUInt() throws TokenizeError {
         // 请填空：
         // 直到查看下一个字符不是数字为止:
@@ -53,19 +52,74 @@ public class Tokenizer {
         // 解析成功则返回无符号整数类型的token，否则返回编译错误
         //
         // Token 的 Value 应填写数字的值
+        boolean isDouble = false;
+        StringBuilder stringBuilder = new StringBuilder();
+        Pos start = it.currentPos();
+        while(!it.isEOF()) {
+            char peek = it.peekChar();
+            if (Character.isDigit(peek)) {
+                stringBuilder.append(it.nextChar());
+            } else if (peek == '.' && !isDouble) {
+                stringBuilder.append(it.nextChar());
+                if (Character.isDigit(it.peekChar())) {
+                    isDouble = true;
+                } else {
+                    throw new TokenizeError(ErrorCode.InvalidDouble ,it.currentPos());
+                }
+            } else if ((peek == 'e' || peek == 'E') && isDouble) {
+                stringBuilder.append(it.nextChar());
+                peek = it.peekChar();
+                if (peek == '+' || peek == '-') {
+                    stringBuilder.append(it.nextChar());
+                }
+                if (Character.isDigit(it.peekChar())) {
+                    isDouble = true;
+                } else {
+                    throw new TokenizeError(ErrorCode.InvalidDouble ,it.currentPos());
+                }
+            } else {
+                break;
+            }
+        }
+        String result = stringBuilder.toString();
+        Pos end = it.currentPos();
+        if (isDouble) {
+            try {
+                return new Token(TokenType.DOUBLE_LITERAL, Double.parseDouble(result), start, end);
+            } catch (NumberFormatException e) {
+                throw new TokenizeError(ErrorCode.DoubleOverflow ,it.currentPos());
+            }
+        } else {
+            try {
+                return new Token(TokenType.UINT_LITERAL, Integer.parseInt(result), start, end);
+            } catch (NumberFormatException e) {
+                throw new TokenizeError(ErrorCode.IntegerOverflow ,it.currentPos());
+            }
 
-            Pos start = new Pos(it.currentPos().row,it.currentPos().col);
-            String s = "";
-            char c;
-            do {
-                char k= it.nextChar();
-                s += k;
-                c = it.peekChar();
-            }while (Character.isDigit(c));
-            int number = Integer.parseInt(s);
-            return new Token(TokenType.UINT_LITERAL,number,start,it.currentPos());
-
-    }
+        }}
+//    }
+//    private Token lexUInt() throws TokenizeError {
+//        // 请填空：
+//        // 直到查看下一个字符不是数字为止:
+//        // -- 前进一个字符，并存储这个字符
+//        //
+//        // 解析存储的字符串为无符号整数
+//        // 解析成功则返回无符号整数类型的token，否则返回编译错误
+//        //
+//        // Token 的 Value 应填写数字的值
+//
+//            Pos start = new Pos(it.currentPos().row,it.currentPos().col);
+//            String s = "";
+//            char c;
+//            do {
+//                char k= it.nextChar();
+//                s += k;
+//                c = it.peekChar();
+//            }while (Character.isDigit(c));
+//            int number = Integer.parseInt(s);
+//            return new Token(TokenType.UINT_LITERAL,number,start,it.currentPos());
+//
+//    }
 
     private Token lexIdentOrKeyword() throws TokenizeError {
         // 请填空：
@@ -98,7 +152,6 @@ public class Tokenizer {
             return new Token(TokenType.IDENT,s,start, it.currentPos());
 
     }
-
     private Token lexStringLiteral() throws TokenizeError {
         StringBuilder stringBuilder = new StringBuilder();
         Pos start = it.currentPos();
@@ -107,6 +160,7 @@ public class Tokenizer {
             char peek = it.peekChar();
             if (peek == '\\') {
 //                stringBuilder.append(it.nextChar());
+                it.nextChar();
                 peek = it.peekChar();
                 switch (peek) {
                     case '\'':
