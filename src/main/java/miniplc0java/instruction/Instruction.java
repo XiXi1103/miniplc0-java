@@ -6,6 +6,8 @@ public class Instruction {
     private Operation opt;
     Integer x;
     String code;
+    Double push_x;
+    boolean push_flag = false;
 
     public Instruction(Operation opt) {
         this.opt = opt;
@@ -15,6 +17,11 @@ public class Instruction {
     public Instruction(Operation opt, Integer x) {
         this.opt = opt;
         this.x = x;
+    }
+    public Instruction(Operation opt, Double push_x,boolean push_flag) {
+        this.opt = opt;
+        this.push_x = push_x;
+        this.push_flag =push_flag;
     }
 
 
@@ -85,7 +92,12 @@ public class Instruction {
             case scan_i:return "50";
             case scan_f:return "52";
 //                return String.format("%s", this.opt);
-            case push:return String.format("%s%016x", "01", (long)x);
+            case push:{
+                if (push_flag){
+                    return String.format("%s%016x", "01", Double.doubleToLongBits(push_x));
+                }
+                return String.format("%s%016x", "01", (long)x);
+            }
             case loca:return String.format("%s%08x", "0a", x);
             case arga:return String.format("%s%08x", "0b",x);
             case globa:return String.format("%s%08x", "0c", x);

@@ -593,6 +593,8 @@ public final class Analyser {
             returnType = Type.INT;
         }
         else if (check(TokenType.DOUBLE_LITERAL)){
+            Token token = expect(TokenType.DOUBLE_LITERAL);
+            instructions.add(new Instruction(Operation.push,(Double)token.getValue(),true));
             returnType = Type.DOUBLE;
         }
         else if (check(TokenType.STRING_LITERAL)){//!!所有字符串都是以strID为键存储的，独立于其他部分
