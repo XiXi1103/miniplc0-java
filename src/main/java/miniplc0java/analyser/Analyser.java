@@ -588,13 +588,15 @@ public final class Analyser {
         else if (check(TokenType.STRING_LITERAL)){//!!所有字符串都是以strID为键存储的，独立于其他部分
             Token token = next();
             String str = token.getValueString();
+            strID++;
             globalSymbol.addSymbol(Integer.toString(strID),true,true,Type.VOID,token.getStartPos());
             globalSymbol.setLength(Integer.toString(strID),str.length());
             globalSymbol.setStr(Integer.toString(strID),str);
 
-            startFuncInstructions.add(new Instruction(Operation.push,globalSymbol.getOffset(Integer.toString(strID),token.getStartPos())));
+
+            instructions.add(new Instruction(Operation.push,strID));
             returnType = Type.INT;
-            strID++;
+
         }
         else {
             expect(TokenType.nop);
