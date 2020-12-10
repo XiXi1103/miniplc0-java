@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -104,19 +106,132 @@ public class App {
                 System.exit(1);
                 return;
             }
-            output.println("72 30 3b 3e");
-            output.println("00 00 00 01");
-            output.printf("%08x%n", Analyser.globalSymbol.getSize());
-//            output.println(Integer.toHexString(1));
-            Analyser.globalSymbol.output(output);
-            output.println();
-            Analyser.printFuncOutputs(output);
+            try {
+                output.write(hexStringToBytes("72303b3e"));
+                output.write(hexStringToBytes("00000001"));
+                output.write(hexStringToBytes(String.format("%08x", Analyser.globalSymbol.getSize())));
+    //            output.println(Integer.toHexString(1));
+                output.write(hexStringToBytes(Analyser.globalSymbol.output()));
+                output.write(hexStringToBytes(Analyser.printFuncOutputs()));
+//                System.out.println(Analyser.printFuncOutputs());
+            } catch (Exception e) {
+
+            }
         } else {
             System.err.println("Please specify either '--analyse' or '--tokenize'.");
             System.exit(3);
         }
     }
-
+//    }public static void main(String[] args) throws CompileError {
+//        var argparse = buildArgparse();
+//        Namespace result;
+//        try {
+//            result = argparse.parseArgs(args);
+//        } catch (ArgumentParserException e1) {
+//            argparse.handleError(e1);
+//            return;
+//        }
+//
+//        var inputFileName = result.getString("input");
+//        var outputFileName = result.getString("output");
+//
+//        InputStream input;
+//        if (inputFileName.equals("-")) {
+//            input = System.in;
+//        } else {
+//            try {
+//                input = new FileInputStream(inputFileName);
+//            } catch (FileNotFoundException e) {
+//                System.err.println("Cannot find input file.");
+//                e.printStackTrace();
+//                System.exit(0);
+//                return;
+//            }
+//        }
+//
+//        PrintStream output;
+//        if (outputFileName.equals("-")) {
+//            output = System.out;
+//        } else {
+//            try {
+//                output = new PrintStream(new FileOutputStream(outputFileName));
+//            } catch (FileNotFoundException e) {
+//                System.err.println("Cannot open output file.");
+//                e.printStackTrace();
+//                System.exit(0);
+//                return;
+//            }
+//        }
+//
+//        Scanner scanner;
+//        scanner = new Scanner(input);
+//        var iter = new StringIter(scanner);
+//        var tokenizer = tokenize(iter);
+//
+//        if (result.getBoolean("tokenize")) {
+//            // tokenize
+//            var tokens = new ArrayList<Token>();
+//            try {
+//                while (true) {
+//                    var token = tokenizer.nextToken();
+//                    if (token.getTokenType().equals(TokenType.EOF)) {
+//                        break;
+//                    }
+//                    tokens.add(token);
+//                }
+//            } catch (Exception e) {
+//                // 遇到错误不输出，直接退出
+//                System.err.println(e);
+//                System.exit(0);
+//                return;
+//            }
+//            for (Token token : tokens) {
+//                output.println(token.toString());
+//            }
+//        } else if (result.getBoolean("analyse")) {
+//            // analyze
+//            var analyzer = new Analyser(tokenizer);
+//            List<Instruction> instructions;
+//            try {
+//                instructions = analyzer.analyse();
+//            } catch (Exception e) {
+//                // 遇到错误不输出，直接退出
+//                System.err.println(e);
+//                System.exit(1);
+//                return;
+//            }
+//            System.out.println("---------------------");
+//            try{
+//                System.out.write(hexStr2Byte("72303b3e"));
+//            }catch (Exception e){
+//
+//            }
+//
+//            output.println("72 30 3b 3e");
+//            output.println("00 00 00 01");
+//            output.printf("%08x%n", Analyser.globalSymbol.getSize());
+////            output.println(Integer.toHexString(1));
+//            Analyser.globalSymbol.output(output);
+//            output.println();
+//            Analyser.printFuncOutputs(output);
+//        } else {
+//            System.err.println("Please specify either '--analyse' or '--tokenize'.");
+//            System.exit(3);
+//        }
+//    }
+    public static byte[] hexStringToBytes(String str) {
+        str = str.replace(" ","");
+        str = str.replace("\n","");
+        if (str == null || str.trim().equals("")) {
+            return new byte[0];
+        }
+        byte[] bytes = new byte[str.length() / 2];
+        for (int i = 0; i < str.length() / 2; i++) {
+            String subStr = str.substring(i * 2, i * 2 + 2);
+            bytes[i] = (byte) Integer.parseInt(subStr, 16);
+        }
+        return bytes;
+    }
     private static ArgumentParser buildArgparse() {
         var builder = ArgumentParsers.newFor("miniplc0-java");
         var parser = builder.build();

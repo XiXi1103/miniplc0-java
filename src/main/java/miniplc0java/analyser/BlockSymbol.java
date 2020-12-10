@@ -1,5 +1,6 @@
 package miniplc0java.analyser;
 
+import miniplc0java.App;
 import miniplc0java.error.AnalyzeError;
 import miniplc0java.error.ErrorCode;
 import miniplc0java.util.Pos;
@@ -94,26 +95,31 @@ public class BlockSymbol {
         entry.isStr = true;
         entry.string = str;
     }
-    public void output(PrintStream output){
+    public String output(){
+        StringBuilder result = new StringBuilder();
         try{
             for (String key:blockSymbolTable.keySet()) {
-                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?0:1);
-                output.printf("%08x%n", getLength(key));
+                result.append(String.format("%02x", isConstant(key, new Pos(-1, -1)) ? 0 : 1));
+                result.append(String.format("%08x", getLength(key)));
+//                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?0:1);
+//                output.printf("%08x%n", getLength(key));
                 if(isStr(key)){
                     String str = getStr(key);
                     for (int i=0;i<str.length();i++)
-                    output.printf("%02x",(int)str.charAt(i));
+                        result.append(String.format("%02x",(int)str.charAt(i)));
+//                    output.printf("%02x",(int)str.charAt(i));
                 }
                 else
                     for (int j=0;j<getLength(key);j++){
-                        output.print("00");
+                        result.append("00");
+//                        output.print("00");
                     }
-                output.print("\n");
+//                output.print("\n");
             }
         }catch (Exception e){
 
         }
-
+    return result.toString();
     }
     
     

@@ -1,5 +1,6 @@
 package miniplc0java.analyser;
 
+import miniplc0java.App;
 import miniplc0java.error.*;
 import miniplc0java.instruction.Instruction;
 import miniplc0java.instruction.Operation;
@@ -31,20 +32,34 @@ public final class Analyser {
     int strID;//只有string会使用，每次加一，直接存字符串内容可能会与ident重名
 
     public static ArrayList<FuncOutput> funcOutputs = new ArrayList<>();//存所有函数的信息及指令
-    public static void printFuncOutputs (PrintStream output){
-        output.printf("%08x%n", funcOutputs.size());
+    public static String printFuncOutputs(){
+        String result = "";
+        result = result+String.format("%08x", funcOutputs.size());
         for (FuncOutput funcOutput:funcOutputs) {
-            output.printf("%08x%n", funcOutput.funcInfo.funID);
-            output.printf("%08x%n", funcOutput.funcInfo.returnType==Type.VOID?0:1);
-            output.printf("%08x%n", funcOutput.funcInfo.paraCnt);
-            output.printf("%08x%n", funcOutput.funcInfo.localParaCnt);
-            output.printf("%08x%n", funcOutput.funcInfo.bodyCnt);
+            result = result+String.format("%08x", funcOutput.funcInfo.funID);
+            result = result+String.format("%08x", funcOutput.funcInfo.returnType==Type.VOID?0:1);
+            result = result+String.format("%08x", funcOutput.funcInfo.paraCnt);
+            result = result+String.format("%08x", funcOutput.funcInfo.localParaCnt);
+            result = result+String.format("%08x", funcOutput.funcInfo.bodyCnt);
             for (Instruction i:funcOutput.list) {
-                output.println(i.toString());
+                result = result+i.toString();
             }
-            output.println();
-            
+
         }
+        return result;
+//        output.printf("%08x%n", funcOutputs.size());
+//        for (FuncOutput funcOutput:funcOutputs) {
+//            output.printf("%08x%n", funcOutput.funcInfo.funID);
+//            output.printf("%08x%n", funcOutput.funcInfo.returnType==Type.VOID?0:1);
+//            output.printf("%08x%n", funcOutput.funcInfo.paraCnt);
+//            output.printf("%08x%n", funcOutput.funcInfo.localParaCnt);
+//            output.printf("%08x%n", funcOutput.funcInfo.bodyCnt);
+//            for (Instruction i:funcOutput.list) {
+//                output.println(i.toString());
+//            }
+//            output.println();
+//
+//        }
     }
 
     /** 当前偷看的 token */
