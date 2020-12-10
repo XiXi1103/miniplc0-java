@@ -85,14 +85,14 @@ public class Instruction {
             case scan_f:return "52";
 //                return String.format("%s", this.opt);
             case push:return String.format("%s%016x", "01", (long)x);
-            case loca:return String.format("%s%016x", "0a", (long)x);
-            case arga:return String.format("%s%016x", "0b", (long)x);
-            case globa:return String.format("%s%016x", "0c", (long)x);
-            case stackalloc:return String.format("%s%016x", "1a", (long)x);
-            case br:return String.format("%s%016x", "41", (long)x);
-            case br_false:return String.format("%s%016x", "42", (long)x);
-            case br_true:return String.format("%s%016x", "43", (long)x);
-            case call:return String.format("%s%016x", "48", (long)x);
+            case loca:return String.format("%s%08x", "0a", (long)x);
+            case arga:return String.format("%s%08x", "0b", (long)x);
+            case globa:return String.format("%s%08x", "0c", (long)x);
+            case stackalloc:return String.format("%s%08x", "1a", (long)x);
+            case br:return String.format("%s%08x", "41", (long)x);
+            case br_false:return String.format("%s%08x", "42", (long)x);
+            case br_true:return String.format("%s%08x", "43", (long)x);
+            case call:return String.format("%s%08x", "48", (long)x);
 //                return String.format("%s %016x", this.opt, (long)x);
             default:
                 return "ILL";
@@ -127,7 +127,7 @@ public class Instruction {
             case scan_c:
             case scan_i:
             case scan_f:
-                return String.format("%s", this.opt);
+                return String.format("%n%s%n", this.opt);
             case push:
             case loca:
             case arga:
@@ -138,7 +138,7 @@ public class Instruction {
             case br_false:
             case br_true:
             case call:
-                return String.format("%s %016x", this.opt, (long)x);
+                return String.format("%s %016x%n", this.opt, (long)x);
             default:
                 return "ILL";
         }

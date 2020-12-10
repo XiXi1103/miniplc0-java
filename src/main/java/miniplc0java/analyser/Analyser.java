@@ -36,7 +36,8 @@ public final class Analyser {
         String result = "";
         result = result+String.format("%08x", funcOutputs.size());
         for (FuncOutput funcOutput:funcOutputs) {
-            result = result+String.format("%08x", funcOutput.funcInfo.funID);
+            result = result+"00000000";
+//            result = result+String.format("%08x", funcOutput.funcInfo.funID);
             result = result+String.format("%08x", funcOutput.funcInfo.returnType==Type.VOID?0:1);
             result = result+String.format("%08x", funcOutput.funcInfo.paraCnt);
             result = result+String.format("%08x", funcOutput.funcInfo.localParaCnt);
@@ -427,6 +428,9 @@ public final class Analyser {
 
         analyseBlock_stmt();
 
+        if (token.getValueString().equals("main")){
+            instructions.add(new Instruction(Operation.ret));
+        }
         funList.get(token.getValueString()).localParaCnt=localParaCnt;//函数表中设置函数局部变量个数
         funList.get(token.getValueString()).bodyCnt=instructions.size();
 
@@ -463,6 +467,7 @@ public final class Analyser {
         FuncInfo funcInfo = new FuncInfo(funID,0,Type.VOID);
         funList.put("_start",funcInfo);
         funID++;
+        globalSymbol.addSymbol("0",true, true,Type.INT,new Pos(-1,-1));
         while (check(TokenType.LET_KW) || check(TokenType.CONST_KW)) {
             analyseGloDecl_stmt();
         }

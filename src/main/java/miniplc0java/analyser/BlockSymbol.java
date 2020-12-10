@@ -96,22 +96,22 @@ public class BlockSymbol {
         entry.string = str;
     }
     public String output(){
-        StringBuilder result = new StringBuilder();
+        String result = "";
         try{
             for (String key:blockSymbolTable.keySet()) {
-                result.append(String.format("%02x", isConstant(key, new Pos(-1, -1)) ? 0 : 1));
-                result.append(String.format("%08x", getLength(key)));
+                result+=(String.format("%02x", isConstant(key, new Pos(-1, -1)) ? 0 : 1));
+                result+=(String.format("%08x", getLength(key)));
 //                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?0:1);
 //                output.printf("%08x%n", getLength(key));
                 if(isStr(key)){
                     String str = getStr(key);
                     for (int i=0;i<str.length();i++)
-                        result.append(String.format("%02x",(int)str.charAt(i)));
+                        result+=(String.format("%02x",(int)str.charAt(i)));
 //                    output.printf("%02x",(int)str.charAt(i));
                 }
                 else
                     for (int j=0;j<getLength(key);j++){
-                        result.append("00");
+                        result+=("00");
 //                        output.print("00");
                     }
 //                output.print("\n");
