@@ -338,7 +338,7 @@ public final class Analyser {
         }
 
         instructions.add(pointer, new Instruction(Operation.br_true, 1));
-        instructions.add(pointer2+1, new Instruction(Operation.br, instructions.size()-pointer2));
+        instructions.add(pointer2+1, new Instruction(Operation.br, instructions.size()-pointer2-1));
     }
 
     private void analyseWhile_stmt() throws CompileError{
@@ -359,6 +359,7 @@ public final class Analyser {
         //return_stmt -> 'return' expr? ';'
         Token token = expect(TokenType.RETURN_KW);
         if (funList.get(curFunc).returnType==Type.VOID){
+            instructions.add(new Instruction(Operation.ret));
             expect(TokenType.SEMICOLON);
             return;
         }
