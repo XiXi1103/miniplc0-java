@@ -280,7 +280,8 @@ public final class Analyser {
                 globalSymbol.addSymbol(name,true,false,type,token.getStartPos());
                 instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));
             }
-            analyseExpr();
+            Type type1 = analyseExpr();
+            if (type!=type1) throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-2));
             instructions.add(new Instruction(Operation.store_64));
         }
         else {
@@ -316,7 +317,8 @@ public final class Analyser {
             globalSymbol.addSymbol(name,true,true,type, token.getStartPos());
             instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));
         }
-        analyseExpr();
+        Type type1 = analyseExpr();
+        if (type!=type1) throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-2));
         expect(TokenType.SEMICOLON);
 
         instructions.add(new Instruction(Operation.store_64));
@@ -849,7 +851,8 @@ public final class Analyser {
             globalSymbol.addSymbol(name,true,false,type,token.getStartPos());
             instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
 
-            analyseExpr();
+            Type type1 = analyseExpr();
+            if (type!=type1) throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-2));
             instructions.add(new Instruction(Operation.store_64));
         }
         else {
@@ -871,7 +874,8 @@ public final class Analyser {
         globalSymbol.addSymbol(name,true,true,type,token.getStartPos());
         instructions.add(new Instruction(Operation.globa, globalSymbol.getOffset(name,token.getStartPos())));//获取该变量的栈偏移
 
-        analyseExpr();
+        Type type1 = analyseExpr();
+        if (type!=type1) throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-2));
         instructions.add(new Instruction(Operation.store_64));
 
         expect(TokenType.SEMICOLON);
