@@ -252,7 +252,7 @@ public final class Analyser {
             analyseBreak_stmt();
         }
         else if (check(TokenType.CONTINUE_KW)){
-
+            analyseContinue_stmt();
         }
         else{
             expect(TokenType.SEMICOLON);
@@ -350,6 +350,13 @@ public final class Analyser {
         instructions.add(pointer, new Instruction(Operation.br_true, 1));
         instructions.add(pointer2+1, new Instruction(Operation.br, instructions.size()-pointer2-1));
     }
+    int continue_cnt = 0;
+    private void analyseContinue_stmt() throws CompileError{
+        expect(TokenType.CONTINUE_KW);
+        expect(TokenType.SEMICOLON);
+        instructions.add(new Instruction(Operation.nop2));
+        continue_cnt++;
+    }
     int break_cnt=0;
     private void analyseBreak_stmt() throws CompileError{
         expect(TokenType.BREAK_KW);
@@ -366,6 +373,8 @@ public final class Analyser {
 
         int tmp = break_cnt;
         break_cnt = 0;
+        int tmp1 = continue_cnt;
+        continue_cnt = 0;
         analyseBlock_stmt();
 
         instructions.add(new Instruction(Operation.br, pointer1-instructions.size()-3));//跳回while
@@ -378,7 +387,14 @@ public final class Analyser {
                 break_cnt--;
             }
         }
-
+        for (int i = instructions.size()-1;continue_cnt!=0;i--){
+            if (instructions.get(i).alterContinue()){
+                instructions.remove(i);
+                instructions.add(i,new Instruction(Operation.br,pointer1-i-1));
+                continue_cnt--;
+            }
+        }
+        continue_cnt = tmp1;
         break_cnt = tmp;
     }
 

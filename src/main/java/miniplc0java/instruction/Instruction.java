@@ -27,6 +27,9 @@ public class Instruction {
     public boolean alterBreak(){
         return this.opt.equals(Operation.nop1);
     }
+    public boolean alterContinue(){
+        return this.opt.equals(Operation.nop2);
+    }
 
     @Override
     public boolean equals(Object o) {
