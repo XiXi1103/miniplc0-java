@@ -100,9 +100,9 @@ public class App {
             List<Instruction> instructions;
             try {
                 analyzer.analyse();
-//                if (Analyser.flag==1){
-//                    printCalc(output);
-//                }
+                if (Analyser.flag==1){
+                    printCalc(output);
+                }
 //                if (Analyser.flag==2){
 //                    printSqrt(output);
 //                }
