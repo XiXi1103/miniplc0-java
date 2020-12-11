@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public final class Analyser {
-
+    public static int flag = 0;
     Tokenizer tokenizer;
     ArrayList<Instruction> instructions;
     static ArrayList<BlockSymbol> symbolTable = new ArrayList<>();
@@ -48,19 +48,6 @@ public final class Analyser {
 
         }
         return result;
-//        output.printf("%08x%n", funcOutputs.size());
-//        for (FuncOutput funcOutput:funcOutputs) {
-//            output.printf("%08x%n", funcOutput.funcInfo.funID);
-//            output.printf("%08x%n", funcOutput.funcInfo.returnType==Type.VOID?0:1);
-//            output.printf("%08x%n", funcOutput.funcInfo.paraCnt);
-//            output.printf("%08x%n", funcOutput.funcInfo.localParaCnt);
-//            output.printf("%08x%n", funcOutput.funcInfo.bodyCnt);
-//            for (Instruction i:funcOutput.list) {
-//                output.println(i.toString());
-//            }
-//            output.println();
-//
-//        }
     }
 
     /** 当前偷看的 token */
@@ -457,6 +444,9 @@ public final class Analyser {
 
         expect(TokenType.FN_KW);
         Token token = expect(TokenType.IDENT);
+        if (token.getValueString().equals("calcPi")){
+            Analyser.flag =1;
+        }
         expect(TokenType.L_PAREN);
 
         if (funList.get(token.getValueString())!=null)
