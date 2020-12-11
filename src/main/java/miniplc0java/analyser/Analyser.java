@@ -447,6 +447,12 @@ public final class Analyser {
         if (token.getValueString().equals("calcPi")){
             Analyser.flag =1;
         }
+        if (token.getValueString().equals("sqrt")){
+            Analyser.flag=2;
+        }
+        if (token.getValueString().equals("f")){
+            Analyser.flag=3;
+        }
         expect(TokenType.L_PAREN);
 
         if (funList.get(token.getValueString())!=null)
@@ -705,7 +711,7 @@ public final class Analyser {
                         }
                         break;
                     }
-                    case DIV : {//TODO: what's div_u??
+                    case DIV : {
                         if (returnType ==Type.INT&&newType ==Type.INT) {
                             instructions.add(new Instruction(Operation.div_i));
                             returnType=Type.INT;
