@@ -8,6 +8,8 @@ public class Instruction {
     String code;
     Double push_x;
     boolean push_flag = false;
+    boolean is_long=false;
+    long long_x;
 
     public Instruction(Operation opt) {
         this.opt = opt;
@@ -17,6 +19,11 @@ public class Instruction {
     public Instruction(Operation opt, Integer x) {
         this.opt = opt;
         this.x = x;
+    }
+    public Instruction(Operation opt, Long x) {
+        this.opt = opt;
+        this.long_x = x;
+        is_long = true;
     }
     public Instruction(Operation opt, Double push_x,boolean push_flag) {
         this.opt = opt;
@@ -101,6 +108,9 @@ public class Instruction {
                 if (push_flag){
                     return String.format("%s%016x", "01", Double.doubleToLongBits(push_x));
                 }
+                else if (is_long){
+                    return String.format("%s%016x", "01", long_x);
+                }
                 return String.format("%s%016x", "01", (long)x);
             }
             case loca:return String.format("%s%08x", "0a", x);
@@ -149,6 +159,15 @@ public class Instruction {
             case scan_f:
                 return String.format("%s%n", this.opt);
             case push:
+            {
+                if (push_flag){
+                    return String.format("%s %016x", "push", Double.doubleToLongBits(push_x));
+                }
+                else if (is_long){
+                    return String.format("%s%016x", "push", long_x);
+                }
+                return String.format("%s %016x", "push", (long)x);
+            }
             case loca:
             case arga:
             case globa:

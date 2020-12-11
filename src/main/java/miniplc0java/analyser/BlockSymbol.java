@@ -4,9 +4,10 @@ import miniplc0java.App;
 import miniplc0java.error.AnalyzeError;
 import miniplc0java.error.ErrorCode;
 import miniplc0java.util.Pos;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.PrintStream;
-import java.util.HashMap;
+import java.util.*;
 
 public class BlockSymbol {
     public static int nextOffset = 0;
@@ -27,6 +28,13 @@ public class BlockSymbol {
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, curPos);
         } else {
             this.blockSymbolTable.put(name, new SymbolEntry(type, isConstant, isInitialized, getNextVariableOffset()));
+        }
+    }
+    public void addSymbol(String name, boolean isInitialized, boolean isConstant,Type type) throws AnalyzeError {
+        if (this.blockSymbolTable.get(name) != null) {
+            throw new AnalyzeError(ErrorCode.DuplicateDeclaration, new Pos(-1,-2));
+        } else {
+            this.blockSymbolTable.put(name, new SymbolEntry(type, isConstant, isInitialized, Analyser.strOffset++));
         }
     }
     public void initializeSymbol(String name, Pos curPos) throws AnalyzeError {
@@ -97,24 +105,24 @@ public class BlockSymbol {
     }
     public String output(){
         String result = "";
+        ArrayList<SymbolEntry> list = new ArrayList<>();
+        for (String key:blockSymbolTable.keySet()){
+            list.add(blockSymbolTable.get(key));
+        }
+        Collections.sort(list);
         try{
-            for (String key:blockSymbolTable.keySet()) {
-                result+=(String.format("%02x", isConstant(key, new Pos(-1, -1)) ? 0 : 1));
-                result+=(String.format("%08x", getLength(key)));
-//                output.printf("%02x%n", isConstant(key,new Pos(-1,-1))?0:1);
-//                output.printf("%08x%n", getLength(key));
-                if(isStr(key)){
-                    String str = getStr(key);
-                    for (int i=0;i<str.length();i++)
-                        result+=(String.format("%02x",(int)str.charAt(i)));
-//                    output.printf("%02x",(int)str.charAt(i));
+            for (SymbolEntry i:list) {
+                result+=(String.format("%02x", i.isConstant?1:0));
+                result+=(String.format("%08x", i.len));
+                if(i.isStr){
+                    String str = i.string;
+                    for (int j=0;j<str.length();j++)
+                        result+=(String.format("%02x",(int)str.charAt(j)));
                 }
                 else
-                    for (int j=0;j<getLength(key);j++){
+                    for (int j=0;j<i.len;j++){
                         result+=("00");
-//                        output.print("00");
                     }
-//                output.print("\n");
             }
         }catch (Exception e){
 

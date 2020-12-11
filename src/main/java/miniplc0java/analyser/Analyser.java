@@ -514,7 +514,7 @@ public final class Analyser {
         Type type = analyseTy();
         symbolTable.get(top).addSymbol(name,true,isConstant,type,token.getStartPos());
     }
-
+    public static int strOffset;
     private void analyseProgram() throws CompileError {
         //program -> decl_stmt* function*
         FuncInfo funcInfo = new FuncInfo(funID,0,Type.VOID);
@@ -525,6 +525,8 @@ public final class Analyser {
             analyseGloDecl_stmt();
         }
         startFuncInstructions = instructions;
+
+        strOffset = BlockSymbol.nextOffset;
 
         while (check(TokenType.FN_KW)){
             analyseFunc();
@@ -634,7 +636,11 @@ public final class Analyser {
         }
         else if (check(TokenType.UINT_LITERAL)){
             Token token = expect(TokenType.UINT_LITERAL);
-            instructions.add(new Instruction(Operation.push,(int)token.getValue()));
+            if (token.getValue() instanceof Long){
+                instructions.add(new Instruction(Operation.push,(long)token.getValue()));
+            }
+            else
+                instructions.add(new Instruction(Operation.push,(int)token.getValue()));
             returnType = Type.INT;
         }
         else if (check(TokenType.DOUBLE_LITERAL)){
@@ -646,7 +652,7 @@ public final class Analyser {
             Token token = next();
             String str = token.getValueString();
             strID++;
-            globalSymbol.addSymbol(Integer.toString(strID),true,true,Type.VOID,token.getStartPos());
+            globalSymbol.addSymbol(Integer.toString(strID),true,true,Type.VOID);
             globalSymbol.setLength(Integer.toString(strID),str.length());
             globalSymbol.setStr(Integer.toString(strID),str);
 
@@ -880,7 +886,7 @@ public final class Analyser {
 
     private void analyseGloDecl_stmt() throws CompileError{//是否为局部变量
         //decl_stmt -> let_decl_stmt | const_decl_stmt
-
+        strID++;
         if (check(TokenType.LET_KW)) analyseGloLet_decl_stmt();
         else analyseGloConst_decl_stmt();
     }

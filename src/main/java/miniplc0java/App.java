@@ -100,21 +100,21 @@ public class App {
             List<Instruction> instructions;
             try {
                 analyzer.analyse();
-                if (Analyser.flag==1){
-                    printCalc(output);
-                }
-                if (Analyser.flag==2){
-                    printSqrt(output);
-                }
+//                if (Analyser.flag==1){
+//                    printCalc(output);
+//                }
+//                if (Analyser.flag==2){
+//                    printSqrt(output);
+//                }
             } catch (Exception e) {
                 // 遇到错误不输出，直接退出
-                if (Analyser.flag==3){
-                    printf(output);
-                }
-                else {
+//                if (Analyser.flag==3){
+//                    printf(output);
+//                }
+//                else {
                     System.err.println(e);
                     System.exit(1);
-                }
+//                }
 
                 return;
             }

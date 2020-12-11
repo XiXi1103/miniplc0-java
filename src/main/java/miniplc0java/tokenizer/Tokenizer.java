@@ -125,7 +125,8 @@ public class Tokenizer {
             try {
                 return new Token(TokenType.UINT_LITERAL, Integer.parseInt(result), start, end);
             } catch (NumberFormatException e) {
-                throw new TokenizeError(ErrorCode.IntegerOverflow ,it.currentPos());
+                return new Token(TokenType.UINT_LITERAL, Long.parseLong(result), start, end);
+//                throw new TokenizeError(ErrorCode.IntegerOverflow ,it.currentPos());
             }
 
         }}

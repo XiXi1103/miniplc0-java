@@ -1,6 +1,6 @@
 package miniplc0java.analyser;
 
-public class SymbolEntry {
+public class SymbolEntry implements Comparable<SymbolEntry>{
     int len = 8;
     boolean isConstant;
     boolean isInitialized;
@@ -20,7 +20,10 @@ public class SymbolEntry {
         this.isInitialized = isDeclared;
         this.stackOffset = stackOffset;
     }
-
+@Override
+public int compareTo(SymbolEntry o){
+        return this.stackOffset-o.stackOffset;
+}
     /**
      * @return the stackOffset
      */
