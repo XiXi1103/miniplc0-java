@@ -352,6 +352,9 @@ public final class Analyser {
     }
     int continue_cnt = 0;
     private void analyseContinue_stmt() throws CompileError{
+        if (!inWhile){
+            throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-1));
+        }
         expect(TokenType.CONTINUE_KW);
         expect(TokenType.SEMICOLON);
         instructions.add(new Instruction(Operation.nop2));
@@ -359,13 +362,20 @@ public final class Analyser {
     }
     int break_cnt=0;
     private void analyseBreak_stmt() throws CompileError{
+        if (!inWhile){
+            throw new AnalyzeError(ErrorCode.Pos1,new Pos(-1,-1));
+        }
         expect(TokenType.BREAK_KW);
         expect(TokenType.SEMICOLON);
         instructions.add(new Instruction(Operation.nop1));
         break_cnt++;
     }
+    boolean inWhile = false;
     private void analyseWhile_stmt() throws CompileError{
+
         //while_stmt -> 'while' expr block_stmt
+        boolean tmp_flag = inWhile;
+        inWhile = true;
         expect(TokenType.WHILE_KW);
         int pointer1 = instructions.size();
         analyseExpr();
@@ -396,6 +406,7 @@ public final class Analyser {
         }
         continue_cnt = tmp1;
         break_cnt = tmp;
+        inWhile = tmp_flag;
     }
 
     private void analyseReturn_stmt() throws CompileError{
