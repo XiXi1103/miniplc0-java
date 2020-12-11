@@ -161,7 +161,7 @@ public final class Analyser {
                 ||check(TokenType.STRING_LITERAL)||check(TokenType.DOUBLE_LITERAL)
                 ||check(TokenType.L_PAREN)||check(TokenType.LET_KW)||check(TokenType.CONST_KW)
                 ||check(TokenType.IF_KW)||check(TokenType.WHILE_KW)||check(TokenType.RETURN_KW)
-                ||check(TokenType.SEMICOLON)||check(TokenType.L_BRACE);
+                ||check(TokenType.SEMICOLON)||check(TokenType.L_BRACE)||check(TokenType.BREAK_KW)||check(TokenType.CONTINUE_KW);
     }
 
     /**
@@ -247,6 +247,11 @@ public final class Analyser {
         }
         else if (check(TokenType.L_BRACE)){
             analyseBlock_stmt();
+        }
+        else if (check(TokenType.BREAK_KW)){
+            analyseBreak_stmt();
+        }
+        else if (check(TokenType.CONTINUE_KW)){
 
         }
         else{
@@ -345,7 +350,13 @@ public final class Analyser {
         instructions.add(pointer, new Instruction(Operation.br_true, 1));
         instructions.add(pointer2+1, new Instruction(Operation.br, instructions.size()-pointer2-1));
     }
-
+    int break_cnt=0;
+    private void analyseBreak_stmt() throws CompileError{
+        expect(TokenType.BREAK_KW);
+        expect(TokenType.SEMICOLON);
+        instructions.add(new Instruction(Operation.nop1));
+        break_cnt++;
+    }
     private void analyseWhile_stmt() throws CompileError{
         //while_stmt -> 'while' expr block_stmt
         expect(TokenType.WHILE_KW);
@@ -353,11 +364,22 @@ public final class Analyser {
         analyseExpr();
         int pointer2 = instructions.size();
 
+        int tmp = break_cnt;
+        break_cnt = 0;
         analyseBlock_stmt();
 
         instructions.add(new Instruction(Operation.br, pointer1-instructions.size()-3));//跳回while
         instructions.add(pointer2, new Instruction(Operation.br, instructions.size()-pointer2));//在while后加跳转，若expr为假，则跳转
         instructions.add(pointer2, new Instruction(Operation.br_true, 1));
+        for (int i=instructions.size()-1;break_cnt!=0;i--){
+            if (instructions.get(i).alterBreak()){
+                instructions.remove(i);
+                instructions.add(i,new Instruction(Operation.br,instructions.size()-i));
+                break_cnt--;
+            }
+        }
+
+        break_cnt = tmp;
     }
 
     private void analyseReturn_stmt() throws CompileError{

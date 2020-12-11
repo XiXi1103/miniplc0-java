@@ -1,7 +1,8 @@
 package miniplc0java.instruction;
 
 public enum Operation {
-    nop
+    nop1,
+    nop2
     ,push
     ,pop
     ,popn

@@ -3,7 +3,7 @@ package miniplc0java.instruction;
 import java.util.Objects;
 
 public class Instruction {
-    private Operation opt;
+    public Operation opt;
     Integer x;
     String code;
     Double push_x;
@@ -24,7 +24,9 @@ public class Instruction {
         this.push_flag =push_flag;
     }
 
-
+    public boolean alterBreak(){
+        return this.opt.equals(Operation.nop1);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -112,6 +114,8 @@ public class Instruction {
         }
         else
             switch (this.opt) {
+                case nop1:
+                case nop2:
             case add_i:
             case sub_i:
             case mul_i:
